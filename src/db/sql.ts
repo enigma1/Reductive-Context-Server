@@ -16,15 +16,15 @@ export const sanitizeDbName = (name: string): string => {
 
 const checkpointPath = path.resolve(
   process.cwd(),
-  envConfig.sqlCheckpoints ?? './sql/data/checkpoints.db',
+  envConfig.sqlCheckpoints || './sql/data/checkpoints.db',
 );
 fs.mkdirSync(path.dirname(checkpointPath), { recursive: true });
 export const checkpointer = SqliteSaver.fromConnString(checkpointPath);
 
 type SqlInstance = InstanceType<typeof Database>;
-let sqlName: string = envConfig.sqlName ?? './sql/data/reductive.db';
+let sqlName: string = envConfig.sqlName || './sql/data/reductive.db';
 
-const dbDir = path.resolve(process.cwd(), envConfig.sqlPath ?? './data');
+const dbDir = path.resolve(process.cwd(), envConfig.sqlPath || './data');
 fs.mkdirSync(dbDir, { recursive: true });
 
 const connections = new Map<string, SqlInstance>();
