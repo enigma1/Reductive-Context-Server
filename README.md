@@ -1,4 +1,4 @@
-# Reductive-Modeller-Server
+# Reductive-Context-Server
 
 The **Reductive Context Server** provices the back end workspace for a human-curated, segment-scoped context selection LLM inference. The application incorporates sqlite3 to store bundles of LLM conversation with a user and associates those bundles with folders and files used on a per conversation basis.
 
@@ -7,7 +7,7 @@ https://github.com/enigma1/Reductive-Context-SPA.git
 
 ## Support This Project
 
-If you find this extension useful, you can support development via PayPal:
+If you find this application useful, you can support development via PayPal:
 [![PayPal](https://img.shields.io/badge/Donate-PayPal-blue)](https://www.paypal.com/donate?hosted_button_id=CRPY96XAY793A)
 Thank you for helping keep this project maintained and improving!
 written by: Mark Samios [@enigma1](https://github.com/enigma1)
