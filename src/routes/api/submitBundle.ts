@@ -153,7 +153,7 @@ export const submitBundle = async (req: FastifyRequest, rsp: FastifyReply) =>
         if (state.next.length > 0) {
           // Graph is paused (at askUser) — tell the frontend
           rsp.raw.write(
-            `data: ${JSON.stringify({ awaiting_clarification: true })}\n\n`,
+            `data: ${JSON.stringify({ awaitingClarification: true })}\n\n`,
           );
         } else {
           rsp.raw.write(`data: ${JSON.stringify({ done: true })}\n\n`);

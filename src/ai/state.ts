@@ -23,7 +23,7 @@ export const promptState = new StateSchema({
   scopeTiming: TimingRangeSchema,
   codeTiming: TimingRangeSchema,
   // Clarification
-  userClarification: z.array(z.string()).default([]),
+  userClarification: z.string().optional(),
 });
 
 let aiStatus = {

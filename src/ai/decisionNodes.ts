@@ -1,3 +1,6 @@
+/* File: src/ai/decisionNodes.ts
+  Composition and Execution of nodes passed between application and LLM
+*/
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { AIMessage } from '@langchain/core/messages';
@@ -108,9 +111,12 @@ export const generateCodeNode = async (
   const currentMessage = state.messages.at(-1);
   const currentRequest = String(currentMessage?.content ?? '');
 
-  let userPrompt = `CURRENT USER REQUEST: ${currentRequest}`;
+  let userPrompt: string;
 
-  if (state.queryScope === 'thread') {
+  if (state.userClarification) {
+    // Resume path: the clarification IS the full updated context
+    userPrompt = state.userClarification;
+  } else if (state.queryScope === 'thread') {
     const previousMessages = state.messages.slice(0, -1);
     userPrompt = [
       'CONVERSATION HISTORY:',
@@ -125,11 +131,6 @@ export const generateCodeNode = async (
     ].join('\n\n');
   } else {
     userPrompt = currentRequest;
-  }
-
-  // Loop-back: inject the user's answer to the prior clarification
-  if (state.userClarification) {
-    userPrompt += `\n\nUSER CLARIFICATION (incorporate this into your plan):\n${state.userClarification}`;
   }
 
   const startedAt = Temporal.Now.instant();

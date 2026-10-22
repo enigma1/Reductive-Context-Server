@@ -222,6 +222,17 @@ export const SubmitBundleContract = {
   responseSchema: SubmitBundleResponseSchema,
 };
 
+export const ResumeBundleRequestSchema = SubmitBundleRequestSchema;
+export type ResumeBundleRequest = z.infer<typeof ResumeBundleRequestSchema>;
+
+export const ResumeBundleResponseSchema = SubmitBundleResponseSchema;
+export type ResumeBundleResponse = z.infer<typeof ResumeBundleResponseSchema>;
+
+export const ResumeBundleContract = {
+  requestSchema: ResumeBundleRequestSchema,
+  responseSchema: ResumeBundleResponseSchema,
+};
+
 export const GetTableDataRequestSchema = z.object({
   table: z.string(),
 });
