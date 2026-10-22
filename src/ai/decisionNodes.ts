@@ -1,15 +1,35 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { AIMessage } from '@langchain/core/messages';
+import { interrupt } from '@langchain/langgraph';
 import {
   type FrontRequest,
   FrontRequestSchema,
   QueryScopeSchema,
   QueryScope,
 } from '>/contracts';
+import { queryRecords } from '>/db';
+import { appErrors } from '>/services';
 import { aiModel, envConfig } from '>/config';
 import { promptState } from './state';
-import type { GenerateCodeUpdate, ClassifyScopeUpdate } from './types';
+import type {
+  GenerateCodeUpdate,
+  ClassifyScopeUpdate,
+  AskUserUpdate,
+} from './types';
+
+const getRole = (roleName: string) => {
+  const row = queryRecords(
+    'SELECT * FROM ai_roles WHERE role_name = ?',
+    roleName,
+  );
+  if (!row)
+    throw appErrors.sql({
+      code: 'not_found',
+      message: 'Role not found',
+    });
+  return row;
+};
 
 const promptDir = `${envConfig.aiRoles}/${envConfig.aiProfile}`;
 
@@ -92,17 +112,12 @@ export const generateCodeNode = async (
 
   if (state.queryScope === 'thread') {
     const previousMessages = state.messages.slice(0, -1);
-
     userPrompt = [
       'CONVERSATION HISTORY:',
-      ...previousMessages.map((message) => {
-        const role = message.type;
+      ...previousMessages.map((m) => {
         const content =
-          typeof message.content === 'string'
-            ? message.content
-            : JSON.stringify(message.content);
-
-        return `${role.toUpperCase()}:\n${content}`;
+          typeof m.content === 'string' ? m.content : JSON.stringify(m.content);
+        return `${m.type.toUpperCase()}:\n${content}`;
       }),
       '',
       'CURRENT USER REQUEST:',
@@ -112,25 +127,41 @@ export const generateCodeNode = async (
     userPrompt = currentRequest;
   }
 
+  // Loop-back: inject the user's answer to the prior clarification
+  if (state.userClarification) {
+    userPrompt += `\n\nUSER CLARIFICATION (incorporate this into your plan):\n${state.userClarification}`;
+  }
+
   const startedAt = Temporal.Now.instant();
   const { raw, parsed } = (await codeGenerator.invoke([
-    {
-      role: 'system',
-      content: codePrompt,
-    },
-    {
-      role: 'user',
-      content: userPrompt,
-    },
+    { role: 'system', content: codePrompt },
+    { role: 'user', content: userPrompt },
   ])) as CodeGeneratorInvoke;
-
   const completedAt = Temporal.Now.instant();
+
+  // Clarification path: model set `clarification`, no files
+  if (parsed.clarification) {
+    return {
+      frontRequest: parsed,
+      tokenUsage: {
+        input: raw.usage_metadata?.input_tokens ?? 0,
+        output: raw.usage_metadata?.output_tokens ?? 0,
+      },
+      codeTiming: {
+        startedAt: startedAt.toString(),
+        completedAt: completedAt.toString(),
+      },
+    };
+  }
+
+  // Success path: reset userClarification so it doesn't leak into next turn
   const answer = parsed.completed
     ? 'Here is my response for this bundle:'
     : 'Incomplete';
 
   return {
     frontRequest: parsed,
+    userClarification: undefined,
     tokenUsage: {
       input: raw.usage_metadata?.input_tokens ?? 0,
       output: raw.usage_metadata?.output_tokens ?? 0,
@@ -138,9 +169,7 @@ export const generateCodeNode = async (
     messages: [
       new AIMessage({
         content: answer,
-        additional_kwargs: {
-          frontRequest: parsed,
-        },
+        additional_kwargs: { frontRequest: parsed },
       }),
     ],
     codeTiming: {
@@ -148,4 +177,15 @@ export const generateCodeNode = async (
       completedAt: completedAt.toString(),
     },
   };
+};
+
+export const askUserNode = async (
+  state: typeof promptState.State,
+): Promise<AskUserUpdate> => {
+  const answer = interrupt({
+    type: 'clarification',
+    question: state.frontRequest?.clarification ?? '',
+  }) as string;
+
+  return { userClarification: answer };
 };

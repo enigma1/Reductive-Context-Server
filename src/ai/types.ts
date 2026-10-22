@@ -14,7 +14,12 @@ export type ClassifyScopeUpdate = {
 
 export type GenerateCodeUpdate = {
   frontRequest: FrontRequest;
+  userClarification?: string;
   tokenUsage: TokenUsage;
-  messages: AIMessage[];
+  messages?: AIMessage[];
   codeTiming: TimingRange;
+};
+
+export type AskUserUpdate = {
+  userClarification: string;
 };

@@ -22,6 +22,8 @@ export const promptState = new StateSchema({
   tokenUsage: TokenUsageSchema,
   scopeTiming: TimingRangeSchema,
   codeTiming: TimingRangeSchema,
+  // Clarification
+  userClarification: z.array(z.string()).default([]),
 });
 
 let aiStatus = {

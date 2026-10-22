@@ -3,7 +3,7 @@ import { apiCallAuth } from '>/services';
 import { dbSession } from '>/db';
 import { BasicResponse } from '>/contracts';
 
-export const abortSql = async (req: FastifyRequest, rsp: FastifyReply) =>
+export const abort = async (req: FastifyRequest, rsp: FastifyReply) =>
   apiCallAuth({
     req,
     rsp,

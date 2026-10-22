@@ -22,10 +22,7 @@ export const createBundle = async (req: FastifyRequest, rsp: FastifyReply) =>
     fn: async (): Promise<CreateBundleResponse> => {
       const { requestSchema, responseSchema } = CreateBundleContract;
       const { rootPaths, paths, prompt } = requestSchema.parse(req.body);
-
-      // const sections: string[] = [`#### Prompt\n\n${prompt}\n`];
       const sections: string[] = [];
-
       const fileRecords: BundleFilesInsertCols = [];
       const pathRecords: BundlePathsInsertCols = [];
 

@@ -83,11 +83,32 @@ export const submitBundle = async (req: FastifyRequest, rsp: FastifyReply) =>
           }
 
           if ('generateCode' in chunk) {
+            const update = chunk.generateCode as GenerateCodeUpdate;
+
+            if (update.frontRequest.clarification) {
+              // Clarification path — no files, no DB insert for a "response"
+              rsp.raw.write(
+                `data: ${JSON.stringify({ node: 'generateCode', clarification: update.frontRequest.clarification })}\n\n`,
+              );
+              // Still track tokens
+              const updateTokensSql = `
+                UPDATE bundles SET input_tokens = input_tokens + ?, output_tokens = output_tokens + ?
+                WHERE bundle_id = ?
+              `;
+              execute(
+                updateTokensSql,
+                update.tokenUsage.input,
+                update.tokenUsage.output,
+                bundleId,
+              );
+              continue; // skip the normal response insert + done event
+            }
+
             const hash = createHash('sha256')
               .update(llmContext)
               .digest('hex')
               .slice(0, 16);
-            const update = chunk.generateCode as GenerateCodeUpdate;
+
             rsp.raw.write(
               `data: ${JSON.stringify({ node: 'generateCode', frontRequest: update.frontRequest })}\n\n`,
             );
@@ -123,11 +144,23 @@ export const submitBundle = async (req: FastifyRequest, rsp: FastifyReply) =>
             );
           }
         }
-        rsp.raw.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+
+        // Stream ended, check if paused at an interrupt
+        const state = await promptGraph.getState({
+          configurable: { thread_id: String(bundleId) },
+        });
+
+        if (state.next.length > 0) {
+          // Graph is paused (at askUser) — tell the frontend
+          rsp.raw.write(
+            `data: ${JSON.stringify({ awaiting_clarification: true })}\n\n`,
+          );
+        } else {
+          rsp.raw.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+        }
       } catch (err) {
         rsp.raw.write(`data: ${JSON.stringify({ error: String(err) })}\n\n`);
       }
-
       rsp.raw.end();
     },
   });

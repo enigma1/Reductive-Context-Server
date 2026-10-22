@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import {
-  abortSql,
+  abort,
   savePreferences,
   loadPreferences,
   checkSession,
@@ -11,11 +11,17 @@ import {
   writeFile,
   createBundle,
   getBundle,
-  submitBundle,
   setBundle,
+  submitBundle,
+  resumeBundle,
   getBundleList,
   deleteBundles,
   getLanguages,
+  createRole,
+  getRoleList,
+  getRole,
+  setRole,
+  deleteRoles,
 } from './api';
 
 export const routes = async (server: FastifyInstance) => {
@@ -36,6 +42,12 @@ export const routes = async (server: FastifyInstance) => {
   server.get('/api/get-bundle-list', getBundleList);
   server.post('/api/set-bundle', setBundle);
   server.post('/api/submit-bundle', submitBundle);
+  server.post('/api/resume-bundle', resumeBundle);
   server.post('/api/delete-bundles', deleteBundles);
   server.get('/api/get-languages', getLanguages);
+  server.get('/api/get-roles', getRoleList);
+  server.post('/api/get-role', getRole);
+  server.post('/api/set-role', setRole);
+  server.post('/api/delete-roles', deleteRoles);
+  server.post('/api/create-role', createRole);
 };

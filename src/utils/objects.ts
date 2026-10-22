@@ -1,3 +1,5 @@
+import { snakeToCamel } from './strings';
+
 export const isObjectEmpty = (obj: unknown): boolean =>
   obj !== null && typeof obj === 'object' && Object.keys(obj).length === 0;
 
@@ -130,3 +132,10 @@ export const getCurrentTimestamp = (units?: 'secs' | 'hours' | 'days') => {
       return ts;
   }
 };
+
+export const recordSnakeToCamel = <T extends Record<string, unknown>>(
+  obj: T,
+): Record<string, unknown> =>
+  Object.fromEntries(
+    Object.entries(obj).map(([key, value]) => [snakeToCamel(key), value]),
+  );

@@ -54,11 +54,16 @@ const setDb = (dbName: string): SqlInstance | null => {
   return getDb();
 };
 
-const query = <T>(sql: string, ...params: unknown[]): T[] =>
+// Returns object rows — one object per row, keys = column names.
+// Use when you need named access: row.role_name
+const queryRecords = <T>(sql: string, ...params: unknown[]): T[] =>
   getDb()
     .prepare(sql)
     .all(...params) as T[];
 
+// Returns positional arrays — one array per row, values in column order.
+// Use when you want to avoid object overhead or map into a tuple.
+// Access by index: row[0], row[1]
 const queryRows = <T>(sql: string, ...params: unknown[]): T[][] =>
   getDb()
     .prepare(sql)
@@ -83,7 +88,7 @@ const getTables = () =>
     .all();
 
 const getColumns = (table: string) =>
-  query<SqlColumn>(`SELECT * FROM pragma_table_info(?)`, table);
+  queryRecords<SqlColumn>(`SELECT * FROM pragma_table_info(?)`, table);
 
 const closeDb = (): boolean => {
   if (connections.size === 0) return false;
@@ -97,7 +102,7 @@ export {
   setDb,
   getTables,
   getColumns,
-  query,
+  queryRecords,
   queryRows,
   queryOne,
   execute,

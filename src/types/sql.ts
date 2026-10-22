@@ -59,3 +59,23 @@ export type BundlePathsInsertCols = {
   path: string;
   depth?: number;
 }[];
+
+export type RoleListRow = {
+  role_name: string;
+  role_main: string;
+};
+
+export type RoleRow = RoleListRow & {
+  role_name: string;
+  role_main: string;
+  content_rules: string;
+  content_examples: string;
+  scope_prompt: string;
+  scope_rules: string;
+  scope_examples: string;
+};
+
+export type ColShape = {
+  name: string;
+  type: string;
+};

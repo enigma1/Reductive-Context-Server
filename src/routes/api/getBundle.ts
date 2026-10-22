@@ -3,7 +3,7 @@
   The route returns the complete bundle details from all associated bundle tables in database
 */
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { query, queryOne } from '>/db';
+import { queryRecords, queryOne } from '>/db';
 import { apiCallAuth, appErrors } from '>/services';
 import { GetBundleResponse, GetBundleContract } from '>/contracts';
 import {
@@ -31,16 +31,19 @@ export const getBundle = async (req: FastifyRequest, rsp: FastifyReply) =>
 
       const sqlBundleConversation = `SELECT * FROM bundle_conversations WHERE bundle_id = ?`;
       const bundleConversations =
-        query<BundleConversationRow>(sqlBundleConversation, bundleId) ?? [];
+        queryRecords<BundleConversationRow>(sqlBundleConversation, bundleId) ??
+        [];
 
       const { bundle_id, bundle_content, prompt, input_tokens, output_tokens } =
         bundleMain;
 
       const sqlBundlePaths = `SELECT * FROM bundle_paths WHERE bundle_id = ?`;
-      const bundlePaths = query<BundlePathsRow>(sqlBundlePaths, bundleId) ?? [];
+      const bundlePaths =
+        queryRecords<BundlePathsRow>(sqlBundlePaths, bundleId) ?? [];
 
       const sqlBundleFiles = `SELECT * FROM bundle_files WHERE bundle_id = ?`;
-      const bundleFiles = query<BundleFilesRow>(sqlBundleFiles, bundleId) ?? [];
+      const bundleFiles =
+        queryRecords<BundleFilesRow>(sqlBundleFiles, bundleId) ?? [];
 
       // Transform response to camelCase
       const conversations = bundleConversations.map((c) => ({

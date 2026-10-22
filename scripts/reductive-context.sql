@@ -38,3 +38,13 @@ CREATE TABLE IF NOT EXISTS bundle_conversations (
   files_json TEXT NOT NULL,
   created_at TEXT DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS ai_roles (
+  role_name TEXT NOT NULL PRIMARY KEY,
+  role_main TEXT NOT NULL,
+  content_rules TEXT NOT NULL,
+  content_examples TEXT NOT NULL,
+  scope_prompt TEXT NOT NULL,
+  scope_rules TEXT NOT NULL,
+  scope_examples TEXT NOT NULL
+);

@@ -2,14 +2,10 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { apiCallAuth } from '>/services';
 import { GetBundleListContract, type GetBundleListResponse } from '>/contracts';
 import { queryRows, getColumns } from '>/db';
-import { JsonArray, Primitive } from '>/types';
+import { JsonArray, Primitive, ColShape } from '>/types';
 
 const SHORT_TEXT = 250;
 
-type ColShape = {
-  name: string;
-  type: string;
-};
 export const getBundleList = async (req: FastifyRequest, rsp: FastifyReply) =>
   apiCallAuth({
     req,
