@@ -41,7 +41,7 @@ export const appErrors = {
 };
 
 export const errorResolver = (e: unknown): AppError => {
-  if (typeof e === 'object' && e && 'type' in e) {
+  if (typeof e === 'object' && e !== null && 'type' in e) {
     return e as AppError;
   }
 
@@ -67,7 +67,11 @@ export const errorResolver = (e: unknown): AppError => {
 
   // DB Error
   if (err?.sqlState || err?.code) {
-    return appErrors.sql(err);
+    return appErrors.sql({
+      code: String(err.code || 'sql_error'),
+      message: err.message || 'Database error',
+      details: err.details,
+    });
   }
 
   return appErrors.server(500, err?.message ?? 'Unknown error');

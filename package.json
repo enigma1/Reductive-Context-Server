@@ -1,18 +1,16 @@
 {
   "name": "Reductive-Modeller-Server",
-  "description": "The Reductive Modeller Server enables the user to select code files and along with a prompt send them to an LLM.",
-  "version": "0.0.5",
+  "description": "The Reductive Modeller Server enables the user to select content files and along with a prompt submit them to a role-primed LLM.",
+  "version": "0.0.6",
   "author": "Mark Samios",
   "license": "GPL-3.0",
   "keywords": [
     "llm",
     "llm-tools",
+    "llm-context",
+    "context-engineering",
     "ai-augmentation",
-    "nodejs",
     "tokens-optimization",
-    "api",
-    "backend-service",
-    "backend-host",
     "human-in-the-loop"
   ],
   "type": "module",

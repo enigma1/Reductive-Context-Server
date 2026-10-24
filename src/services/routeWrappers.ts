@@ -20,6 +20,7 @@ const processOrThrowVersion = (req: FastifyRequest) => {
     );
   }
 };
+
 export const buildDataSession = (req: FastifyRequest): SessionData => {
   const sessionId = req.cookies?.sessionId;
   let sessionData = dbSession.get(sessionId);
@@ -56,6 +57,7 @@ type HandleApiFnArgs = {
   rsp: FastifyReply;
   mode?: 'json' | 'stream';
 };
+
 const handleApiFn = async <T>(
   fn: () => Promise<T>,
   { req, rsp, mode = 'json' }: HandleApiFnArgs,
@@ -68,13 +70,12 @@ const handleApiFn = async <T>(
     if (mode === 'stream') return;
 
     return {
-      ...result,
+      ...(result && typeof result === 'object' ? result : {}),
       route: req.url,
       aiStatus: getAiStatus(),
-    };
+    } as T;
   } catch (e: unknown) {
     const error = errorResolver(e);
-    let result;
 
     switch (error?.type) {
       case 'auth': {
@@ -85,7 +86,7 @@ const handleApiFn = async <T>(
         }
 
         rsp.setCookie(envConfig.cookieName, '', getCookieOptions(0));
-        result = rsp.status(401).send({
+        rsp.status(401).send({
           error:
             error.kind === 'missing' ? 'Login required' : 'Invalid session',
           code: 401,
@@ -97,7 +98,7 @@ const handleApiFn = async <T>(
         break;
       }
       case 'domain':
-        result = rsp.status(422).send({
+        rsp.status(422).send({
           error: 'Request Failed',
           code: 422,
           message: error.message,
@@ -105,7 +106,7 @@ const handleApiFn = async <T>(
         break;
 
       case 'validation':
-        result = rsp.status(400).send({
+        rsp.status(400).send({
           error: 'Invalid request',
           code: 400,
           message: 'Validation failed - see details',
@@ -114,7 +115,7 @@ const handleApiFn = async <T>(
         break;
 
       case 'sql':
-        result = rsp.status(400).send({
+        rsp.status(400).send({
           error: 'Invalid Database request',
           code: 400,
           message: 'Database Request Failed - see details',
@@ -123,7 +124,7 @@ const handleApiFn = async <T>(
         break;
 
       case 'server':
-        result = rsp.status(error.code).send({
+        rsp.status(error.code).send({
           error: error.message,
           code: error.code,
           message: 'Details are not available',
@@ -131,7 +132,7 @@ const handleApiFn = async <T>(
         break;
 
       default:
-        result = rsp.status(500).send({
+        rsp.status(500).send({
           error: 'Unknown Server Error',
           code: 500,
           message: 'An unexpected error occurred',
@@ -150,12 +151,11 @@ type ApiCallCommonProps = {
 type ApiCallAuthProps<T> = ApiCallCommonProps & {
   fn: (sessionData: SessionData) => Promise<ApiResponse<T> | T>;
 };
-// Use with routes the return JSON for logged-in users
+
 export const apiCallAuth = async <T>({ req, rsp, fn }: ApiCallAuthProps<T>) =>
   handleApiFn(
     async () => {
       const sessionData = buildDataSession(req);
-      // processOrThrowVersion(req);
 
       sessionData.lastSqlActivity = getCurrentTimestamp();
       rsp.setCookie(
@@ -219,7 +219,6 @@ export const apiCallUnknown = async <T>({
           rsp.header(key, value);
         }
       }
-      // optional status override
       if (hasObjectProps(res, ['effects', ['status']])) {
         const status = res.effects?.status as number;
         rsp.status(status);
@@ -231,7 +230,7 @@ export const apiCallUnknown = async <T>({
         return {
           ok: false,
           message: 'request failed',
-        };
+        } as unknown as T;
       }
     },
     { req, rsp },
@@ -239,8 +238,6 @@ export const apiCallUnknown = async <T>({
 
 type AiContext = {
   sessionData: SessionData;
-  // eventually:
-  // other AI-specific dependencies
 };
 
 type ApiCallAiProps<T> = ApiCallCommonProps & {
@@ -278,7 +275,7 @@ type StreamResponse = {
 type ApiCallStreamProps = ApiCallCommonProps & {
   fn: (sessionData: SessionData) => Promise<StreamResponse | void>;
 };
-// Use with routes streaming
+
 export const apiCallStream = async <T>({ req, rsp, fn }: ApiCallStreamProps) =>
   handleApiFn(
     async () => {

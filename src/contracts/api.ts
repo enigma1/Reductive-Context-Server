@@ -328,7 +328,10 @@ export const GetRoleContract = {
   responseSchema: GetRoleResponseSchema,
 };
 
-export const SetRoleRequestSchema = AssistantRoleDetailedSchema;
+export const SetRoleRequestSchema = AssistantRoleDetailedSchema.extend({
+  orgName: z.string().min(1),
+});
+
 export type SetRoleRequest = z.infer<typeof SetRoleRequestSchema>;
 
 export const SetRoleResponseSchema = BasicResponseSchema;

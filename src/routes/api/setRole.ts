@@ -16,6 +16,7 @@ export const setRole = async (req: FastifyRequest, rsp: FastifyReply) =>
       const { requestSchema, responseSchema } = SetRoleContract;
       const {
         name,
+        orgName,
         roleMain,
         contentRules,
         contentExamples,
@@ -23,8 +24,9 @@ export const setRole = async (req: FastifyRequest, rsp: FastifyReply) =>
         scopeRules,
         scopeExamples,
       } = requestSchema.parse(req.body);
+
       const sqlRole = `SELECT * FROM ai_roles WHERE role_name = ?`;
-      const roleRow = queryOne<RoleRow>(sqlRole, name);
+      const roleRow = queryOne<RoleRow>(sqlRole, orgName);
       if (!roleRow) {
         throw appErrors.sql({
           code: 'not_found',
@@ -33,20 +35,21 @@ export const setRole = async (req: FastifyRequest, rsp: FastifyReply) =>
       }
 
       const sqlSetRole = `
-        UPDATE ai_roles SET role_main = ?, content_rules = ?, content_examples = ?,
+        UPDATE ai_roles SET role_name = ?, role_main = ?, content_rules = ?, content_examples = ?,
         scope_prompt = ?, scope_rules = ?, scope_examples = ?
         WHERE role_name = ?
       `;
 
       const result = execute(
         sqlSetRole,
+        name,
         roleMain,
         contentRules,
         contentExamples,
         scopePrompt,
         scopeRules,
         scopeExamples,
-        name,
+        orgName,
       );
 
       if (!result || result.changes === 0) {
