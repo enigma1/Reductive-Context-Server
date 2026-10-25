@@ -15,7 +15,7 @@ const startServer = async () => {
     await mkdir(prefsDir, { recursive: true });
     await server.listen({ host, port });
     console.log(`Started server at https://${host}:${port}`);
-    console.log(`Using Profle: ${envConfig.aiProfile}`);
+    console.log(`Using Profile: ${envConfig.aiProfile}`);
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);

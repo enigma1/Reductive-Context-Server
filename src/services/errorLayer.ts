@@ -1,5 +1,5 @@
 import { ZodError } from 'zod';
-import { AppError, SqlError } from '>/types';
+import { AppError, SqlError, DomainError } from '>/types';
 
 export const appErrors = {
   authMissing: () => ({
@@ -21,23 +21,16 @@ export const appErrors = {
     type: 'validation',
     error,
   }),
-  domain: (code: string, message: string) => ({
+  domain: (error: DomainError) => ({
     type: 'domain',
-    code,
-    message,
-  }),
-  server: (code: number, message: string) => ({
-    type: 'server',
-    code,
-    message,
+    error,
   }),
 } satisfies {
   authMissing: () => AppError;
   authInvalid: () => AppError;
   sql: (error: SqlError) => AppError;
   validation: (error: ZodError) => AppError;
-  domain: (code: string, message: string) => AppError;
-  server: (code: number, message: string) => AppError;
+  domain: (error: DomainError) => AppError;
 };
 
 export const errorResolver = (e: unknown): AppError => {
@@ -54,10 +47,13 @@ export const errorResolver = (e: unknown): AppError => {
     }
 
     if (err.statusCode === 404) {
-      return appErrors.server(404, err.message);
+      return appErrors.domain({ code: '404', message: err.message });
     }
 
-    return appErrors.server(err.statusCode, err.message);
+    return appErrors.domain({
+      code: String(err.statusCode),
+      message: err.message,
+    });
   }
 
   // Zod
@@ -74,5 +70,8 @@ export const errorResolver = (e: unknown): AppError => {
     });
   }
 
-  return appErrors.server(500, err?.message ?? 'Unknown error');
+  return appErrors.domain({
+    code: '500',
+    message: err?.message ?? 'Unknown error',
+  });
 };

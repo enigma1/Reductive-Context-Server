@@ -287,6 +287,9 @@ export const AssistantRoleDetailedSchema = AssistantRoleSchema.extend({
   scopePrompt: z.string(),
   scopeRules: z.string(),
   scopeExamples: z.string(),
+  image: z.instanceof(Buffer).nullish(),
+  status: z.number().min(0).max(1).default(1),
+  sortOrder: z.number().int().min(0).default(0),
 });
 
 export const CreateRoleRequestSchema = AssistantRoleDetailedSchema;
@@ -340,6 +343,20 @@ export type SetRoleResponse = z.infer<typeof SetRoleResponseSchema>;
 export const SetRoleContract = {
   requestSchema: SetRoleRequestSchema,
   responseSchema: SetRoleResponseSchema,
+};
+
+export const ActivateRoleRequestSchema = z.object({
+  roleName: z.string().optional(),
+});
+
+export type ActivateRoleRequest = z.infer<typeof ActivateRoleRequestSchema>;
+
+export const ActivateRoleResponseSchema = BasicResponseSchema;
+export type ActivateRoleResponse = z.infer<typeof ActivateRoleResponseSchema>;
+
+export const ActivateRoleContract = {
+  requestSchema: ActivateRoleRequestSchema,
+  responseSchema: ActivateRoleResponseSchema,
 };
 
 export const DeleteRolesRequestSchema = z.object({

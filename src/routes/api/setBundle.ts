@@ -34,7 +34,7 @@ export const setBundle = async (req: FastifyRequest, rsp: FastifyReply) =>
       if (!bundleMain) {
         throw appErrors.sql({
           code: 'not_found',
-          message: 'Bundle not found',
+          message: 'Bundle not found in storage',
         });
       }
 
@@ -49,10 +49,11 @@ export const setBundle = async (req: FastifyRequest, rsp: FastifyReply) =>
         for (const node of paths) {
           const resolved = safeResolve(`${node.path}/${node.name}`);
           if (!resolved) {
-            throw appErrors.domain(
-              'invalid_filename_or_path',
-              `Invalid path: ${node.path}/${node.name}`,
-            );
+            throw appErrors.domain({
+              code: 'invalid_filename_or_path',
+              message: 'Invalid path specified',
+              details: [`Path: ${node.path}/${node.name}`],
+            });
           }
 
           const content = await fs.readFile(resolved, 'utf-8');

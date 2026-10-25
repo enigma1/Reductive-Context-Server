@@ -22,6 +22,7 @@ import {
   getRole,
   setRole,
   deleteRoles,
+  activateRole,
 } from './api';
 
 export const routes = async (server: FastifyInstance) => {
@@ -50,4 +51,5 @@ export const routes = async (server: FastifyInstance) => {
   server.post('/api/set-role', setRole);
   server.post('/api/delete-roles', deleteRoles);
   server.post('/api/create-role', createRole);
+  server.post('/api/activate-role', activateRole);
 };

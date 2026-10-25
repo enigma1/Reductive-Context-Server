@@ -2,6 +2,24 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { apiCallAuth, appErrors } from '>/services';
 import { OpenRouterModels, GetOpenRouterModelsResponse } from '>/types';
 
+let cached: OpenRouterModels | null = null;
+let ts = 0;
+const TTL = 10 * 60 * 1000;
+
+const getModels = async (): Promise<OpenRouterModels> => {
+  if (cached && Date.now() - ts < TTL) return cached;
+
+  const res = await fetch('https://openrouter.ai/api/v1/models', {
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!res.ok) throw new Error(`OpenRouter: ${res.status}`);
+
+  const data = (await res.json()) as { data?: OpenRouterModels };
+  cached = data.data ?? [];
+  ts = Date.now();
+  return cached;
+};
+
 export const getOpenRouterModels = async (
   req: FastifyRequest,
   rsp: FastifyReply,
@@ -10,20 +28,9 @@ export const getOpenRouterModels = async (
     req,
     rsp,
     fn: async (): Promise<GetOpenRouterModelsResponse> => {
-      const response = await fetch('https://openrouter.ai/api/v1/models');
+      const data = await getModels();
 
-      if (!response.ok) {
-        throw appErrors.server(
-          500,
-          `OpenRouter models request failed: ${response.status} ${response.statusText}`,
-        );
-      }
-
-      const data = (await response.json()) as {
-        data?: OpenRouterModels;
-      };
-
-      const models = (data.data ?? []).filter(
+      const models = (data ?? []).filter(
         (model) =>
           // model.architecture?.modality === 'text->text' &&
           model.supported_parameters?.includes('response_format') &&

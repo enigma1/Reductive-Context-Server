@@ -19,3 +19,4 @@ export * from './deleteRoles';
 export * from './getRole';
 export * from './setRole';
 export * from './getRoleList';
+export * from './activateRole';

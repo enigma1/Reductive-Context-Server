@@ -14,10 +14,10 @@ const useCookieDomain = getEnvKey('COOKIE_USE_DOMAIN') === '1';
 const processOrThrowVersion = (req: FastifyRequest) => {
   const spaVersion = req.headers['reductive-context-version'];
   if (Number(spaVersion) !== REDUCTIVE_CONTEXT_VERSION) {
-    throw appErrors.domain(
-      'version_not_supported',
-      `The current server version [${REDUCTIVE_CONTEXT_VERSION}] does not match the Reductive-Context SPA Version [${spaVersion}]`,
-    );
+    throw appErrors.domain({
+      code: 'version_not_supported',
+      message: `The current server version [${REDUCTIVE_CONTEXT_VERSION}] does not match the Reductive-Context SPA Version [${spaVersion}]`,
+    });
   }
 };
 
@@ -101,7 +101,7 @@ const handleApiFn = async <T>(
         rsp.status(422).send({
           error: 'Request Failed',
           code: 422,
-          message: error.message,
+          message: error.error.message,
         });
         break;
 
@@ -120,14 +120,6 @@ const handleApiFn = async <T>(
           code: 400,
           message: 'Database Request Failed - see details',
           details: error.error.details?.map((detail) => detail),
-        });
-        break;
-
-      case 'server':
-        rsp.status(error.code).send({
-          error: error.message,
-          code: error.code,
-          message: 'Details are not available',
         });
         break;
 

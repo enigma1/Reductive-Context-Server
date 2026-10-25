@@ -11,8 +11,8 @@ import {
   QueryScopeSchema,
   QueryScope,
 } from '>/contracts';
-import { queryRecords } from '>/db';
-import { appErrors } from '>/services';
+// import { queryRecords, dbSession } from '>/db';
+// import { appErrors } from '>/services';
 import { aiModel, envConfig } from '>/config';
 import { promptState } from './state';
 import type {
@@ -21,18 +21,25 @@ import type {
   AskUserUpdate,
 } from './types';
 
-const getRole = (roleName: string) => {
-  const row = queryRecords(
-    'SELECT * FROM ai_roles WHERE role_name = ?',
-    roleName,
-  );
-  if (!row)
-    throw appErrors.sql({
-      code: 'not_found',
-      message: 'Role not found',
-    });
-  return row;
-};
+// const getRole = (roleName?: string) => {
+//   const name = roleName ?? dbSession.getRole();
+//   if (!name) {
+//     throw appErrors.domain({
+//       code: 'not_found',
+//       message: 'Role is undefined',
+//       details: ['You must first specify a role'],
+//     });
+//   }
+
+//   const row = queryRecords('SELECT * FROM ai_roles WHERE role_name = ?', name);
+//   if (!row)
+//     throw appErrors.sql({
+//       code: 'not_found',
+//       message: 'Role not found',
+//       details: ['No such role with the given name found in storage'],
+//     });
+//   return row;
+// };
 
 const promptDir = `${envConfig.aiRoles}/${envConfig.aiProfile}`;
 

@@ -1,11 +1,14 @@
 import { v4 as uuidv4 } from 'uuid';
 import { envConfig } from '>/config';
 import { conversations, startAiMonitor } from '>/ai';
+import { queryOne } from './sql';
 import { getCurrentTimestamp } from '>/utils';
-import { SessionData } from '>/types';
+import { appErrors } from '>/services';
+import { SessionData, RoleRow } from '>/types';
 
 export const endSessions: SessionData[] = [];
 export const sessionStore = new Map<string, SessionData>();
+let sessionRole: string | undefined;
 
 const startRetirementJanitor = () => {
   setInterval(async () => {
@@ -102,7 +105,7 @@ const activate = async ({
   return true;
 };
 
-const resetDb = async (sessionData: SessionData) => {};
+const resetSession = async (sessionData: SessionData) => {};
 
 const refresh = async (sessionData: SessionData) => {
   endSessions.push({
@@ -114,6 +117,28 @@ const refresh = async (sessionData: SessionData) => {
 
 const release = async (sessionData: SessionData) => {};
 
+const setRole = (roleName?: string) => {
+  if (!roleName) {
+    sessionRole = undefined;
+    return;
+  }
+
+  const role = queryOne<RoleRow>(
+    'SELECT * FROM ai_roles WHERE role_name = ?',
+    roleName,
+  );
+  if (!role)
+    throw appErrors.sql({
+      code: 'not_found',
+      message: 'Role not found',
+      details: ['No such role with the given name found in storage'],
+    });
+
+  sessionRole = role.role_name;
+};
+
+const getRole = () => sessionRole;
+
 export const dbSession = {
   create,
   set,
@@ -122,5 +147,7 @@ export const dbSession = {
   release,
   refresh,
   activate,
-  resetDb,
+  resetSession,
+  getRole,
+  setRole,
 };

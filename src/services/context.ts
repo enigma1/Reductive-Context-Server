@@ -8,10 +8,10 @@ export const getSessionData = (): SessionData => {
   const sessionData = requestContext.getStore();
 
   if (!sessionData) {
-    throw appErrors.domain(
-      'invalid_session_data',
-      'SessionData is not available in the current request',
-    );
+    throw appErrors.domain({
+      code: 'invalid_session_data',
+      message: 'SessionData is not available in the current request',
+    });
   }
   return sessionData;
 };

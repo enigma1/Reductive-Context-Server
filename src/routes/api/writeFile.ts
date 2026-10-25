@@ -16,10 +16,10 @@ export const writeFile = async (req: FastifyRequest, rsp: FastifyReply) =>
       const userPath = `${path}/${name}`;
       const resolved = safeResolve(userPath);
       if (!resolved) {
-        throw appErrors.domain(
-          'invalid_filename_or_path',
-          'Invalid Filename or Directory requested',
-        );
+        throw appErrors.domain({
+          code: 'invalid_filename_or_path',
+          message: 'Invalid Filename or Directory requested',
+        });
       }
 
       await fs.writeFile(resolved, content, 'utf-8');

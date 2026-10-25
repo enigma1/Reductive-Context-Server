@@ -40,11 +40,14 @@ CREATE TABLE IF NOT EXISTS bundle_conversations (
 );
 
 CREATE TABLE IF NOT EXISTS ai_roles (
-  role_name TEXT NOT NULL PRIMARY KEY,
-  role_main TEXT NOT NULL,
-  content_rules TEXT NOT NULL,
-  content_examples TEXT NOT NULL,
-  scope_prompt TEXT NOT NULL,
-  scope_rules TEXT NOT NULL,
-  scope_examples TEXT NOT NULL
+  role_name        TEXT    NOT NULL PRIMARY KEY,
+  role_main        TEXT    NOT NULL,
+  content_rules    TEXT    NOT NULL,
+  content_examples TEXT    NOT NULL,
+  scope_prompt     TEXT    NOT NULL,
+  scope_rules      TEXT    NOT NULL,
+  scope_examples   TEXT    NOT NULL,
+  image            BLOB,
+  sort_order       INTEGER NOT NULL DEFAULT 0,
+  status           INTEGER NOT NULL DEFAULT 1 CHECK (status IN (0, 1))
 );
