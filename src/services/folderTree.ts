@@ -3,7 +3,8 @@
 */
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import { safeResolve, scanDir, rootPath } from './files';
+import { safeResolve, scanDir, rootPath as globalRootPath } from './files';
+import { getFolderAnnotation } from './annotations';
 
 type FolderTreeOptions = {
   /** Maximum directory levels below the requested root. */
@@ -51,7 +52,10 @@ export const getFolderTree = async (
   }
 
   const { scanResult, folders } = await scanDir(absPath, depth);
-  const rootRel = path.relative(rootPath, absPath).split(path.sep).join('/');
+  const rootRel = path
+    .relative(globalRootPath, absPath)
+    .split(path.sep)
+    .join('/');
   const root = createTreeNode();
 
   // Build directory hierarchy from folders, including empty directories.
@@ -115,9 +119,8 @@ export const getFolderTree = async (
     lines.push(`${rootName}/`);
   }
 
-  const render = (node: TreeNode, prefix: string): void => {
+  const render = (node: TreeNode, prefix: string, relPath: string): void => {
     const dirs = [...node.dirs.keys()].sort((a, b) => a.localeCompare(b));
-
     const files = includeFiles
       ? [...node.files].sort((a, b) => a.localeCompare(b))
       : [];
@@ -131,28 +134,35 @@ export const getFolderTree = async (
       const isLast = index === entries.length - 1;
       const branch = isLast ? '└── ' : '├── ';
 
-      lines.push(`${prefix}${branch}${entry.name}${entry.isDir ? '/' : ''}`);
-
       if (entry.isDir) {
+        const childRel = relPath ? `${relPath}/${entry.name}` : entry.name;
+        const annotation = getFolderAnnotation(path.join(absPath, childRel));
+        lines.push(
+          `${prefix}${branch}${entry.name}/` +
+            (annotation ? `  // ${annotation}` : ''),
+        );
         const child = node.dirs.get(entry.name)!;
-        render(child, `${prefix}${isLast ? '    ' : '│   '}`);
+        render(child, `${prefix}${isLast ? '    ' : '│   '}`, childRel);
+      } else {
+        lines.push(`${prefix}${branch}${entry.name}`);
       }
     });
   };
 
-  render(root, includeRoot ? '' : '');
+  render(root, '', '');
   return lines.join('\n');
 };
 
 export const convertFolderTreeToText = (
   folders: string[],
-  rootPath = '',
+  targetPath = '',
 ): string => {
   const root: { children: Map<string, typeof root> } = {
     children: new Map(),
   };
 
-  const normalizedRoot = rootPath.replace(/\/+$/, '');
+  const absAbsPath = safeResolve(targetPath) || globalRootPath;
+  const normalizedRoot = targetPath.replace(/\/+$/, '');
 
   for (const folder of folders) {
     const relativePath = normalizedRoot
@@ -169,26 +179,38 @@ export const convertFolderTreeToText = (
       if (!current.children.has(segment)) {
         current.children.set(segment, { children: new Map() });
       }
-
       current = current.children.get(segment)!;
     }
   }
 
   const lines: string[] = [];
 
-  const render = (node: typeof root, prefix = ''): void => {
+  const render = (node: typeof root, prefix = '', relPath = ''): void => {
     const entries = [...node.children.entries()].sort(([a], [b]) =>
       a.localeCompare(b),
     );
 
     entries.forEach(([name, child], index) => {
       const isLast = index === entries.length - 1;
+      const childRel = relPath ? `${relPath}/${name}` : name;
+      const annotation = getFolderAnnotation(path.join(absAbsPath, childRel));
 
-      lines.push(`${prefix}${isLast ? '└── ' : '├── '}${name}/`);
-      render(child, `${prefix}${isLast ? '    ' : '│   '}`);
+      lines.push(
+        `${prefix}${isLast ? '└── ' : '├── '}${name}/` +
+          (annotation ? `  // ${annotation}` : ''),
+      );
+      render(child, `${prefix}${isLast ? '    ' : '│   '}`, childRel);
     });
   };
 
   render(root);
   return lines.join('\n');
+};
+
+export const getTree = async (path: string, depth?: number) => {
+  const result = await getFolderTree(path, {
+    depth: depth || undefined,
+    includeFiles: false,
+  });
+  return result;
 };

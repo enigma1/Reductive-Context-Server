@@ -4,7 +4,7 @@
 */
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { queryRecords, queryOne } from '>/db';
-import { apiCallAuth, appErrors } from '>/services';
+import { apiCallAuth, appErrors, getTree } from '>/services';
 import { GetBundleResponse, GetBundleContract } from '>/contracts';
 import {
   BundlesRow,
@@ -41,6 +41,16 @@ export const getBundle = async (req: FastifyRequest, rsp: FastifyReply) =>
       const bundlePaths =
         queryRecords<BundlePathsRow>(sqlBundlePaths, bundleId) ?? [];
 
+      const entries = await Promise.all(
+        bundlePaths
+          .filter((row) => row.root_path)
+          .map(
+            async (row) =>
+              [row.root_path, await getTree(row.root_path, row.depth)] as const,
+          ),
+      );
+      const textTrees: Record<string, string> = Object.fromEntries(entries);
+
       const sqlBundleFiles = `SELECT * FROM bundle_files WHERE bundle_id = ?`;
       const bundleFiles =
         queryRecords<BundleFilesRow>(sqlBundleFiles, bundleId) ?? [];
@@ -76,6 +86,7 @@ export const getBundle = async (req: FastifyRequest, rsp: FastifyReply) =>
         prompt,
         conversations,
         rootPaths,
+        textTrees,
         userFiles,
         inputTokens: input_tokens,
         outputTokens: output_tokens,

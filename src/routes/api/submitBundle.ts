@@ -17,10 +17,18 @@ export const submitBundle = async (req: FastifyRequest, rsp: FastifyReply) =>
     rsp,
     fn: async (sessionData) => {
       const { requestSchema } = SubmitBundleContract;
-      const { bundleId, bundleContent, prompt } = requestSchema.parse(req.body);
+      const { bundleId, bundleContent, prompt, textTrees } =
+        requestSchema.parse(req.body);
+
+      const contextSection =
+        textTrees && Object.keys(textTrees).length > 0
+          ? `\n\n## Operating Context\n\n${Object.entries(textTrees)
+              .map(([root, tree]) => `### ${root}\n\n\`\`\`\n${tree}\n\`\`\``)
+              .join('\n\n')}`
+          : '';
 
       // Compose the full context sent to the LLM
-      const llmContext = `## Prompt\n\n${prompt}\n\n${bundleContent}`;
+      const llmContext = `## Prompt\n\n${prompt}\n\n${bundleContent}${contextSection}`;
 
       const inputTokens = countTokens({
         text: llmContext,

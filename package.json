@@ -1,7 +1,7 @@
 {
   "name": "Reductive-Modeller-Server",
   "description": "The Reductive Modeller Server enables the user to select content files and along with a prompt submit them to a role-primed LLM.",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "author": "Mark Samios",
   "license": "GPL-3.0",
   "keywords": [
