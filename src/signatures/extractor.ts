@@ -24,5 +24,6 @@ export const extractSignatures = (path: string, content: string): string => {
   if (!language) return content;
 
   const handler = handlers[language] ?? undefined;
-  return handler ? handler(content) : content;
+  const result = handler ? handler(content, { filePath: path }) : content;
+  return result;
 };

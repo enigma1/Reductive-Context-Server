@@ -1,8 +1,6 @@
 /* File: src/ai/decisionNodes.ts
   Composition and Execution of nodes passed between application and LLM
 */
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { AIMessage } from '@langchain/core/messages';
 import { interrupt } from '@langchain/langgraph';
 import {
@@ -11,9 +9,10 @@ import {
   QueryScopeSchema,
   QueryScope,
 } from '>/contracts';
-// import { queryRecords, dbSession } from '>/db';
-// import { appErrors } from '>/services';
-import { aiModel, envConfig } from '>/config';
+import { queryOne, dbSession } from '>/db';
+import { appErrors } from '>/services';
+import { aiModel } from '>/config';
+import type { RoleRow } from '>/types';
 import { promptState } from './state';
 import type {
   GenerateCodeUpdate,
@@ -21,54 +20,38 @@ import type {
   AskUserUpdate,
 } from './types';
 
-// const getRole = (roleName?: string) => {
-//   const name = roleName ?? dbSession.getRole();
-//   if (!name) {
-//     throw appErrors.domain({
-//       code: 'not_found',
-//       message: 'Role is undefined',
-//       details: ['You must first specify a role'],
-//     });
-//   }
+const getRole = (roleName?: string) => {
+  const name = roleName ?? dbSession.getRole();
+  if (!name) {
+    throw appErrors.domain({
+      code: 'not_found',
+      message: 'Role is undefined',
+      details: ['You must first specify a role'],
+    });
+  }
 
-//   const row = queryRecords('SELECT * FROM ai_roles WHERE role_name = ?', name);
-//   if (!row)
-//     throw appErrors.sql({
-//       code: 'not_found',
-//       message: 'Role not found',
-//       details: ['No such role with the given name found in storage'],
-//     });
-//   return row;
-// };
-
-const promptDir = `${envConfig.aiRoles}/${envConfig.aiProfile}`;
-
-const scopeRules = readFileSync(
-  resolve(promptDir, 'scopeRules.md'),
-  'utf8',
-).trim();
-const scopeExamples = readFileSync(
-  resolve(promptDir, 'scopeExamples.md'),
-  'utf8',
-).trim();
-const scopePrompt = readFileSync(resolve(promptDir, 'scopePrompt.md'), 'utf8')
-  .replace('{RULES}', scopeRules)
-  .replace('{EXAMPLES}', scopeExamples)
-  .trim();
-
-const codeRules = readFileSync(
-  resolve(promptDir, 'contentRules.md'),
-  'utf8',
-).trim();
-const codeExamples = readFileSync(
-  resolve(promptDir, 'contentExamples.md'),
-  'utf8',
-).trim();
-
-const codePrompt = readFileSync(resolve(promptDir, 'role.md'), 'utf8')
-  .replace('{RULES}', codeRules)
-  .replace('{EXAMPLES}', codeExamples)
-  .trim();
+  const dbRole = queryOne<RoleRow>(
+    'SELECT * FROM ai_roles WHERE role_name = ?',
+    name,
+  );
+  if (!dbRole) {
+    dbSession.setRole();
+    throw appErrors.sql({
+      code: 'not_found',
+      message: 'Role not found',
+      details: ['No such role with the given name found in storage'],
+    });
+  }
+  return {
+    roleName: dbRole.role_name,
+    roleMain: dbRole.role_main,
+    contentRules: dbRole.content_rules,
+    contentExamples: dbRole.content_examples,
+    scopePrompt: dbRole.scope_prompt,
+    scopeRules: dbRole.scope_rules,
+    scopeExamples: dbRole.scope_examples,
+  };
+};
 
 const scopeClassifier = aiModel.withStructuredOutput(QueryScopeSchema, {
   includeRaw: true,
@@ -82,6 +65,9 @@ export const classifyScopeNode = async (
 ): Promise<ClassifyScopeUpdate> => {
   const currentMessage = state.messages.at(-1);
   const currentRequest = String(currentMessage?.content ?? '');
+
+  const role = getRole();
+  const scopePrompt = role.scopePrompt;
 
   const startedAt = Temporal.Now.instant();
 
@@ -118,6 +104,9 @@ export const generateCodeNode = async (
   const currentMessage = state.messages.at(-1);
   const currentRequest = String(currentMessage?.content ?? '');
 
+  const role = getRole();
+  const roleMain = role.roleMain;
+
   let userPrompt: string;
 
   if (state.userClarification) {
@@ -142,7 +131,7 @@ export const generateCodeNode = async (
 
   const startedAt = Temporal.Now.instant();
   const { raw, parsed } = (await codeGenerator.invoke([
-    { role: 'system', content: codePrompt },
+    { role: 'system', content: roleMain },
     { role: 'user', content: userPrompt },
   ])) as CodeGeneratorInvoke;
   const completedAt = Temporal.Now.instant();
