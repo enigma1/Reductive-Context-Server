@@ -127,6 +127,7 @@ const setRole = (roleName?: string) => {
     'SELECT * FROM ai_roles WHERE role_name = ?',
     roleName,
   );
+
   if (!role)
     throw appErrors.sql({
       code: 'not_found',

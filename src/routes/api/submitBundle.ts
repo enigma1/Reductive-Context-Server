@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { OutgoingHttpHeaders } from 'node:http';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { HumanMessage } from '@langchain/core/messages';
-import { execute } from '>/db';
+import { execute, dbSession } from '>/db';
 import {
   promptGraph,
   type ClassifyScopeUpdate,
@@ -17,8 +17,10 @@ export const submitBundle = async (req: FastifyRequest, rsp: FastifyReply) =>
     rsp,
     fn: async (sessionData) => {
       const { requestSchema } = SubmitBundleContract;
-      const { bundleId, bundleContent, prompt, textTrees } =
+      const { bundleId, bundleContent, prompt, textTrees, roleName } =
         requestSchema.parse(req.body);
+
+      dbSession.setRole(roleName);
 
       const contextSection =
         textTrees && Object.keys(textTrees).length > 0
@@ -34,11 +36,13 @@ export const submitBundle = async (req: FastifyRequest, rsp: FastifyReply) =>
         text: llmContext,
         model: sessionData.aiStatus.model,
       });
+
       const bundleSql = `
         UPDATE bundles
         SET bundle_content = ?, prompt = ?, input_tokens = ?, last_modified = datetime('now')
         WHERE bundle_id = ?
       `;
+
       const result = execute(
         bundleSql,
         bundleContent,
@@ -123,12 +127,13 @@ export const submitBundle = async (req: FastifyRequest, rsp: FastifyReply) =>
 
             const responseSql = `
               INSERT INTO bundle_conversations
-              (bundle_id, summary, reasoning, clarification, files_json, input_tokens, output_tokens, prompt, content_hash)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+              (bundle_id, role_name, summary, reasoning, clarification, files_json, input_tokens, output_tokens, prompt, content_hash)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
             execute(
               responseSql,
               bundleId,
+              roleName,
               update.frontRequest.summary,
               update.frontRequest.reasoning,
               update.frontRequest.clarification ?? null,
@@ -167,6 +172,7 @@ export const submitBundle = async (req: FastifyRequest, rsp: FastifyReply) =>
           rsp.raw.write(`data: ${JSON.stringify({ done: true })}\n\n`);
         }
       } catch (err) {
+        console.log('------------------------------>submit-catch', err);
         rsp.raw.write(`data: ${JSON.stringify({ error: String(err) })}\n\n`);
       }
       rsp.raw.end();

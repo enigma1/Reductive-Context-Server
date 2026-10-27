@@ -1,6 +1,8 @@
 # Reductive-Context-Server
 
-The **Reductive Context Server** provices the back end workspace for a human-curated, segment-scoped context selection LLM inference. The application incorporates sqlite3 to store bundles of LLM conversation with a user and associates those bundles with folders and files used on a per conversation basis.
+The **Reductive Context Server** is a human-controlled context orchestration workflow with explicit approval and persistent interaction history. This repository provices the back end workspace for segment-scoped context selection LLM inference. The application incorporates sqlite3 to store bundles of LLM conversations with a user and then associates those bundles with folders and files used on a per conversation basis.
+
+The key concept is the application does not automatically send the entire project to the model. Instead, it prepares a representation of the project, lets the user decide what context to include, before sending an explicitly assembled bundle to the LLM. In addition it implements a reviewable, database-backed context and conversation workflow, with explicit approval gates and branching interaction paths.
 
 Front end which interacts with the server is located here
 https://github.com/enigma1/Reductive-Context-SPA.git
@@ -14,13 +16,26 @@ written by: Mark Samios [@enigma1](https://github.com/enigma1)
 
 ## Features
 
+- Supports for multiple project roots
+- Selective source files inclusion
 - Selecting relevant files rather than indiscriminately sending entire code trees.
 - Extracting signatures when implementation details are unnecessary.
 - Extract relevant functions or code lines only.
 - Managing context budgets and token estimates.
 - Maintaining conversation and bundle history.
 - Supports different model providers.
+- Database driven LLM Roles.
 - Keeps the human in control of context selection and approval.
+- Workflow separates project discovery, context selection, bundle assembly, approval, LLM execution, clarification and response persistence
+
+### AI Roles
+
+- Configurable AI Assistant Platform
+- Database driven roles
+- Roles can be designed for different tasks and professional domains
+- Can create, activate, edit, update, and delete roles.
+- Can activate different roles within the same conversation.
+- Each role defines the assistant's traits, rules, examples, and intended behavior.
 
 ### API Features
 
@@ -31,11 +46,40 @@ written by: Mark Samios [@enigma1](https://github.com/enigma1)
 - Multi-folder sources that allow file selections
 - Structured error handling
 
+#### Operation
+
+1. Select a project folder
+   The user specifies a local folder that the application's backend is authorized and able to access. The application uses that folder as the root for project discovery.
+
+2. Scan and index the project
+   The backend scans the folder hierarchy and builds two complementary maps:
+   A structural map, containing directories and barrel-file comments that describe module responsibilities.
+   A file inventory, listing the files available under each directory to allow specific file selection.
+
+3. Present context-selection controls
+   The frontend presents the discovered files and lets the user decide what will enter the context bundle:
+
+- Which files to include.
+- Whether to include the structural map and barrel comments.
+- Whether each selected file contributes its full content or signatures only.
+
+4. Assemble the context bundle
+   The application prepares the selected material for the LLM rather than indiscriminately transmitting the source tree.
+
 ### Profile Support
 
 Different profiles are supported using specific folder with instructions in markdown. The profiles are located under `aiRoles` in the root of the `reductive-context-server` and consist of 2 sets for content and scope. The most important files are `role.md` which create the LLM assistant and the assistant's rules in `contentRules.md`. There is also a `contentExamples.md` which helps the LLM with how responses should be formulated.
 
 ### Signature Mode
+
+### Profile Maps
+
+Profile maps can assist the LLM in terms of speed and accuracy. There are 2 main ways that are under development:
+
+1. Folder tree structure with path summary
+   To activate this mode you must supply a short comment on top of the barrel index file in a folder.
+   In turn the comment will be appened with the folder tree dynamically.
+2. Using the package.json to provide libraries relevant to the project for prompt assist. The implementation details are still under development
 
 The back end supports extraction for types, interfaces, functions, classes, enums signatures, which can guide the LLMs while reducing massively token usage. Abstract Syntax Trees (ASTs) can be applied on specific file types to eliminate implementation details when signatures are enough.
 

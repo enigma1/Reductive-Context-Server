@@ -66,8 +66,6 @@ export type RoleListRow = {
 };
 
 export type RoleRow = RoleListRow & {
-  role_name: string;
-  role_main: string;
   content_rules: string;
   content_examples: string;
   scope_prompt: string;

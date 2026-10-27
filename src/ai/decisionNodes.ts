@@ -42,12 +42,42 @@ const getRole = (roleName?: string) => {
       details: ['No such role with the given name found in storage'],
     });
   }
+
+  // Interpolate placeholders if they exist in roleMain
+  let resolvedRoleMain = dbRole.role_main ?? '';
+  if (resolvedRoleMain.includes('{RULES}')) {
+    resolvedRoleMain = resolvedRoleMain.replace(
+      '{RULES}',
+      dbRole.content_rules ?? '',
+    );
+  }
+  if (resolvedRoleMain.includes('{EXAMPLES}')) {
+    resolvedRoleMain = resolvedRoleMain.replace(
+      '{EXAMPLES}',
+      dbRole.content_examples ?? '',
+    );
+  }
+
+  let resolvedScopePrompt = dbRole.scope_prompt ?? '';
+  if (resolvedScopePrompt.includes('{RULES}')) {
+    resolvedScopePrompt = resolvedScopePrompt.replace(
+      '{RULES}',
+      dbRole.scope_rules ?? '',
+    );
+  }
+  if (resolvedScopePrompt.includes('{EXAMPLES}')) {
+    resolvedScopePrompt = resolvedScopePrompt.replace(
+      '{EXAMPLES}',
+      dbRole.scope_examples ?? '',
+    );
+  }
+
   return {
     roleName: dbRole.role_name,
-    roleMain: dbRole.role_main,
+    roleMain: resolvedRoleMain,
     contentRules: dbRole.content_rules,
     contentExamples: dbRole.content_examples,
-    scopePrompt: dbRole.scope_prompt,
+    scopePrompt: resolvedScopePrompt,
     scopeRules: dbRole.scope_rules,
     scopeExamples: dbRole.scope_examples,
   };
@@ -130,10 +160,13 @@ export const generateContentNode = async (
   }
 
   const startedAt = Temporal.Now.instant();
-  const { raw, parsed } = (await contentGenerator.invoke([
+
+  const invocationResult = (await contentGenerator.invoke([
     { role: 'system', content: roleMain },
     { role: 'user', content: userPrompt },
   ])) as ContentGeneratorInvoke;
+
+  const { raw, parsed } = invocationResult;
   const completedAt = Temporal.Now.instant();
 
   // Clarification path: model set `clarification`, no files

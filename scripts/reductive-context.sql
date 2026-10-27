@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS bundle_conversations (
   reasoning TEXT NOT NULL DEFAULT '',
   clarification TEXT,
   files_json TEXT NOT NULL,
-  created_at TEXT DEFAULT (datetime('now'))
+  created_at TEXT DEFAULT (datetime('now')),
+  role_name TEXT DEFAULT NULL
 );
 
 CREATE TABLE IF NOT EXISTS ai_roles (
