@@ -21,7 +21,7 @@ export const promptState = new StateSchema({
   queryScope: QueryScopeSchema,
   tokenUsage: TokenUsageSchema,
   scopeTiming: TimingRangeSchema,
-  codeTiming: TimingRangeSchema,
+  contentTiming: TimingRangeSchema,
   // Clarification
   userClarification: z.string().optional(),
 });

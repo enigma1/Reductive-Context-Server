@@ -12,12 +12,12 @@ export type ClassifyScopeUpdate = {
   scopeTiming: TimingRange;
 };
 
-export type GenerateCodeUpdate = {
+export type GenerateContentUpdate = {
   frontRequest: FrontRequest;
   userClarification?: string;
   tokenUsage: TokenUsage;
   messages?: AIMessage[];
-  codeTiming: TimingRange;
+  contentTiming: TimingRange;
 };
 
 export type AskUserUpdate = {

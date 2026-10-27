@@ -6,7 +6,7 @@ import { execute } from '>/db';
 import {
   promptGraph,
   type ClassifyScopeUpdate,
-  type GenerateCodeUpdate,
+  type GenerateContentUpdate,
 } from '>/ai';
 import { apiCallStream, appErrors, countTokens } from '>/services';
 import { SubmitBundleContract } from '>/contracts';
@@ -90,13 +90,13 @@ export const submitBundle = async (req: FastifyRequest, rsp: FastifyReply) =>
             );
           }
 
-          if ('generateCode' in chunk) {
-            const update = chunk.generateCode as GenerateCodeUpdate;
+          if ('generateContent' in chunk) {
+            const update = chunk.generateContent as GenerateContentUpdate;
 
             if (update.frontRequest.clarification) {
               // Clarification path — no files, no DB insert for a "response"
               rsp.raw.write(
-                `data: ${JSON.stringify({ node: 'generateCode', clarification: update.frontRequest.clarification })}\n\n`,
+                `data: ${JSON.stringify({ node: 'generateContent', clarification: update.frontRequest.clarification })}\n\n`,
               );
               // Still track tokens
               const updateTokensSql = `
@@ -118,7 +118,7 @@ export const submitBundle = async (req: FastifyRequest, rsp: FastifyReply) =>
               .slice(0, 16);
 
             rsp.raw.write(
-              `data: ${JSON.stringify({ node: 'generateCode', frontRequest: update.frontRequest })}\n\n`,
+              `data: ${JSON.stringify({ node: 'generateContent', frontRequest: update.frontRequest })}\n\n`,
             );
 
             const responseSql = `

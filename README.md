@@ -14,6 +14,14 @@ written by: Mark Samios [@enigma1](https://github.com/enigma1)
 
 ## Features
 
+- Selecting relevant files rather than indiscriminately sending entire code trees.
+- Extracting signatures when implementation details are unnecessary.
+- Extract relevant functions or code lines only.
+- Managing context budgets and token estimates.
+- Maintaining conversation and bundle history.
+- Supports different model providers.
+- Keeps the human in control of context selection and approval.
+
 ### API Features
 
 - Fastify-based HTTP API
@@ -47,8 +55,11 @@ Features include:
 - **Structured output** — API requests/responses and LLM responses are validated against a Zod schema
 - **Incomplete request handling** — When a request cannot be completed from the available information, the assistant identifies the missing information and generates clarification questions.
 - **Query scope detection** — Requests are classified as either:
-  - `current` — request based on the current user message.
+  - `current` — parenthesis request exclusively focused on the current user message.
   - `thread` — request is in the context from earlier messages in the conversation.
+- **Query Clarification** — When the LLM identifies an incomplete request:
+  - `clarification` — request requires additional information.
+
 - **Conversation-aware requests** — Thread-level requests can use the conversation history to answer questions about previously generated content.
 - **Bundle history integration** — Previously generated responses are retained as part of the conversation/application context, allowing users to refer back to earlier LLM respond records.
 - **Provider-independent LLM support** — The AI layer can use different LLM providers through LangChain, including local Ollama models and hosted providers such as OpenAI, Anthropic, and Google Gemini.

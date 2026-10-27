@@ -15,7 +15,7 @@ import { aiModel } from '>/config';
 import type { RoleRow } from '>/types';
 import { promptState } from './state';
 import type {
-  GenerateCodeUpdate,
+  GenerateContentUpdate,
   ClassifyScopeUpdate,
   AskUserUpdate,
 } from './types';
@@ -56,7 +56,7 @@ const getRole = (roleName?: string) => {
 const scopeClassifier = aiModel.withStructuredOutput(QueryScopeSchema, {
   includeRaw: true,
 });
-const codeGenerator = aiModel.withStructuredOutput(FrontRequestSchema, {
+const contentGenerator = aiModel.withStructuredOutput(FrontRequestSchema, {
   includeRaw: true,
 });
 
@@ -93,14 +93,14 @@ export const classifyScopeNode = async (
   };
 };
 
-type CodeGeneratorInvoke = {
+type ContentGeneratorInvoke = {
   parsed: FrontRequest;
   raw: AIMessage;
 };
 
-export const generateCodeNode = async (
+export const generateContentNode = async (
   state: typeof promptState.State,
-): Promise<GenerateCodeUpdate> => {
+): Promise<GenerateContentUpdate> => {
   const currentMessage = state.messages.at(-1);
   const currentRequest = String(currentMessage?.content ?? '');
 
@@ -119,7 +119,7 @@ export const generateCodeNode = async (
       ...previousMessages.map((m) => {
         const content =
           typeof m.content === 'string' ? m.content : JSON.stringify(m.content);
-        return `${m.type.toUpperCase()}:\n${content}`;
+        return `${m.type.toUpperCase()}:${content}`;
       }),
       '',
       'CURRENT USER REQUEST:',
@@ -130,10 +130,10 @@ export const generateCodeNode = async (
   }
 
   const startedAt = Temporal.Now.instant();
-  const { raw, parsed } = (await codeGenerator.invoke([
+  const { raw, parsed } = (await contentGenerator.invoke([
     { role: 'system', content: roleMain },
     { role: 'user', content: userPrompt },
-  ])) as CodeGeneratorInvoke;
+  ])) as ContentGeneratorInvoke;
   const completedAt = Temporal.Now.instant();
 
   // Clarification path: model set `clarification`, no files
@@ -144,7 +144,7 @@ export const generateCodeNode = async (
         input: raw.usage_metadata?.input_tokens ?? 0,
         output: raw.usage_metadata?.output_tokens ?? 0,
       },
-      codeTiming: {
+      contentTiming: {
         startedAt: startedAt.toString(),
         completedAt: completedAt.toString(),
       },
@@ -169,7 +169,7 @@ export const generateCodeNode = async (
         additional_kwargs: { frontRequest: parsed },
       }),
     ],
-    codeTiming: {
+    contentTiming: {
       startedAt: startedAt.toString(),
       completedAt: completedAt.toString(),
     },

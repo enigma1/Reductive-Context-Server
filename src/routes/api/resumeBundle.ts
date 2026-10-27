@@ -3,7 +3,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { Command } from '@langchain/langgraph';
 import { ResumeBundleContract } from '>/contracts';
 import { execute } from '>/db';
-import { promptGraph, type GenerateCodeUpdate } from '>/ai';
+import { promptGraph, type GenerateContentUpdate } from '>/ai';
 import { apiCallStream } from '>/services';
 
 export const resumeBundle = async (req: FastifyRequest, rsp: FastifyReply) =>
@@ -31,10 +31,10 @@ export const resumeBundle = async (req: FastifyRequest, rsp: FastifyReply) =>
       );
 
       for await (const chunk of stream) {
-        if ('generateCode' in chunk) {
-          const update = chunk.generateCode as GenerateCodeUpdate;
+        if ('generateContent' in chunk) {
+          const update = chunk.generateContent as GenerateContentUpdate;
           rsp.raw.write(
-            `data: ${JSON.stringify({ node: 'generateCode', frontRequest: update.frontRequest })}\n\n`,
+            `data: ${JSON.stringify({ node: 'generateContent', frontRequest: update.frontRequest })}\n\n`,
           );
           const updateTokensSql = `
             UPDATE bundles SET input_tokens = input_tokens + ?, output_tokens = output_tokens + ?
