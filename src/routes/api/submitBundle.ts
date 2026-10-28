@@ -172,7 +172,7 @@ export const submitBundle = async (req: FastifyRequest, rsp: FastifyReply) =>
           rsp.raw.write(`data: ${JSON.stringify({ done: true })}\n\n`);
         }
       } catch (err) {
-        console.log('------------------------------>submit-catch', err);
+        console.log('-------------------> submit-catch-error:', err);
         rsp.raw.write(`data: ${JSON.stringify({ error: String(err) })}\n\n`);
       }
       rsp.raw.end();

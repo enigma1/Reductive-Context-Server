@@ -42,7 +42,9 @@ const getDb = () => {
   return db;
 };
 
-const setDb = (dbName: string): SqlInstance | null => {
+const setDb = (dbName?: string): SqlInstance | null => {
+  if (!dbName) return getDb();
+
   const safe = sanitizeDbName(dbName);
   if (!safe || safe === '.db') {
     throw appErrors.sql({

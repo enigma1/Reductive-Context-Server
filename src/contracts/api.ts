@@ -391,3 +391,18 @@ export const GetLanguagesContract = {
   requestSchema: GetLanguagesRequestSchema,
   responseSchema: GetLanguagesResponseSchema,
 };
+
+export const ExportDatabaseRequestSchema = z.object({
+  dbName: z.string().min(1).optional(),
+});
+export type ExportDatabaseRequest = z.infer<typeof ExportDatabaseRequestSchema>;
+
+export const ExportDatabaseResponseSchema = z.void();
+export type ExportDatabaseResponse = z.infer<
+  typeof ExportDatabaseResponseSchema
+>;
+
+export const ExportDatabaseContract = {
+  requestSchema: ExportDatabaseRequestSchema,
+  responseSchema: ExportDatabaseResponseSchema,
+};

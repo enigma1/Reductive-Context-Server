@@ -20,3 +20,4 @@ export * from './getRole';
 export * from './setRole';
 export * from './getRoleList';
 export * from './activateRole';
+export * from './exportDatabase';
