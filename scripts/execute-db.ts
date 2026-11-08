@@ -1,5 +1,5 @@
-/* File: scripts/init-db.ts
-  Initializes the database creating the schema
+/* File: scripts/execute-db.ts
+  Execute an SQL script for the sqllite3 databases
 */
 import { readFileSync } from 'node:fs';
 import path from 'node:path';

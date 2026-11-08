@@ -23,6 +23,16 @@ import {
   setRole,
   deleteRoles,
   activateRole,
+  createMcp,
+  getMcpList,
+  getMcp,
+  setMcp,
+  deleteMcps,
+  createFlow,
+  getFlowList,
+  getFlow,
+  setFlow,
+  deleteFlows,
   exportDatabase,
 } from './api';
 
@@ -53,5 +63,15 @@ export const routes = async (server: FastifyInstance) => {
   server.post('/api/delete-roles', deleteRoles);
   server.post('/api/create-role', createRole);
   server.post('/api/activate-role', activateRole);
+  server.post('/api/create-mcp', createMcp);
+  server.get('/api/get-mcps', getMcpList);
+  server.post('/api/get-mcp', getMcp);
+  server.post('/api/set-mcp', setMcp);
+  server.post('/api/delete-mcps', deleteMcps);
+  server.post('/api/create-flow', createFlow);
+  server.get('/api/get-flow-list', getFlowList);
+  server.post('/api/get-flow', getFlow);
+  server.post('/api/set-flow', setFlow);
+  server.post('/api/delete-flows', deleteFlows);
   server.post('/db/export', exportDatabase);
 };

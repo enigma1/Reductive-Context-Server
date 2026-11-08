@@ -1,6 +1,6 @@
 # Reductive-Context-Server
 
-The **Reductive Context Server** is a human-controlled context orchestration workflow with explicit approval and persistent interaction history. This repository provices the back end workspace for segment-scoped context selection LLM inference. The application incorporates sqlite3 to store bundles of LLM conversations with a user and then associates those bundles with folders and files used on a per conversation basis.
+The **Reductive Context Server** is a human-controlled context orchestration workflow with explicit approval and persistent interaction history. This repository provides the back end workspace for segment-scoped context selection LLM inference. The application incorporates sqlite3 to store bundles of LLM conversations with a user and then associates those bundles with folders and files used on a per conversation basis.
 
 The key concept is the application does not automatically send the entire project to the model. Instead, it prepares a representation of the project, lets the user decide what context to include, before sending an explicitly assembled bundle to the LLM. In addition it implements a reviewable, database-backed context and conversation workflow, with explicit approval gates and branching interaction paths.
 

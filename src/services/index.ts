@@ -6,3 +6,4 @@ export * from './files';
 export * from './folderTree';
 export * from './tokenizer';
 export * from './annotations';
+export * from './prompt';

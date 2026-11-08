@@ -118,7 +118,7 @@ const handleApiFn = async <T>(
         rsp.status(400).send({
           error: 'Invalid Database request',
           code: 400,
-          message: 'Database Request Failed - see details',
+          message: `Request Failed: ${error.error.message}`,
           details: error.error.details?.map((detail) => detail),
         });
         break;

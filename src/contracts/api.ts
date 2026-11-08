@@ -15,6 +15,12 @@ const ColumnSchema = z.object({
   type: z.string(),
   name: z.string(),
 });
+
+const CommonColumnsSchema = z.object({
+  status: z.number().min(0).max(1).default(1),
+  sortOrder: z.number().int(),
+});
+
 export const BasicRowsShapeSchema = z.object({
   rows: z.array(z.unknown()),
   cols: z.record(z.string(), ColumnSchema),
@@ -280,6 +286,7 @@ export const DeleteBundlesContract = {
 };
 
 export const AssistantRoleSchema = z.object({
+  ...CommonColumnsSchema.shape,
   name: z.string().min(1),
   roleMain: z.string(),
 });
@@ -290,9 +297,7 @@ export const AssistantRoleDetailedSchema = AssistantRoleSchema.extend({
   scopePrompt: z.string(),
   scopeRules: z.string(),
   scopeExamples: z.string(),
-  image: z.instanceof(Buffer).nullish(),
-  status: z.number().min(0).max(1).default(1),
-  sortOrder: z.number().int().min(0).default(0),
+  roleIcon: z.string().optional(),
 });
 
 export const CreateRoleRequestSchema = AssistantRoleDetailedSchema;
@@ -373,6 +378,190 @@ export type DeleteRolesResponse = z.infer<typeof DeleteRolesResponseSchema>;
 export const DeleteRolesContract = {
   requestSchema: DeleteRolesRequestSchema,
   responseSchema: DeleteRolesResponseSchema,
+};
+
+const mcpListMode = ['enabled', 'all'] as const;
+export type McpListMode = z.infer<typeof mcpListMode>;
+
+const mcpTransports = ['http', 'internal', 'external'] as const;
+export type McpTransports = z.infer<typeof mcpTransports>;
+
+export const McpShortSchema = z.object({
+  ...CommonColumnsSchema.shape,
+  mcpName: z.string().min(1),
+  mcpTransport: z.enum(mcpTransports),
+  mcpIcon: z.string().optional(),
+});
+export const McpDetailedSchema = z.object({
+  ...McpShortSchema.shape,
+  mcpJson: z.string().min(20),
+});
+
+export const CreateMcpRequestSchema = z.object({
+  ...McpDetailedSchema.shape,
+});
+export type CreateMcpRequest = z.infer<typeof CreateMcpRequestSchema>;
+
+export const CreateMcpResponseSchema = BasicResponseSchema;
+export type CreateMcpResponse = z.infer<typeof CreateMcpResponseSchema>;
+
+export const CreateMcpContract = {
+  requestSchema: CreateMcpRequestSchema,
+  responseSchema: CreateMcpResponseSchema,
+};
+
+export const GetMcpListRequestSchema = z.void();
+
+export type GetMcpListRequest = z.infer<typeof GetMcpListRequestSchema>;
+export const GetMcpListResponseSchema = BasicResponseSchema.extend({
+  services: z.array(McpShortSchema),
+});
+export type GetMcpListResponse = z.infer<typeof GetMcpListResponseSchema>;
+
+export const GetMcpListContract = {
+  requestSchema: GetMcpListRequestSchema,
+  responseSchema: GetMcpListResponseSchema,
+};
+
+export const GetMcpRequestSchema = z.object({
+  name: z.string().min(1),
+});
+export type GetMcpRequest = z.infer<typeof GetMcpRequestSchema>;
+
+export const GetMcpResponseSchema = BasicResponseSchema.extend({
+  ...McpDetailedSchema.shape,
+});
+export type GetMcpResponse = z.infer<typeof GetMcpResponseSchema>;
+
+export const GetMcpContract = {
+  requestSchema: GetMcpRequestSchema,
+  responseSchema: GetMcpResponseSchema,
+};
+
+export const SetMcpRequestSchema = McpDetailedSchema.extend({
+  orgName: z.string().min(1),
+});
+export type SetMcpRequest = z.infer<typeof SetMcpRequestSchema>;
+
+export const SetMcpResponseSchema = BasicResponseSchema;
+export type SetMcpResponse = z.infer<typeof SetMcpResponseSchema>;
+
+export const SetMcpContract = {
+  requestSchema: SetMcpRequestSchema,
+  responseSchema: SetMcpResponseSchema,
+};
+
+export const DeleteMcpsRequestSchema = z.object({
+  mcpNames: z.array(z.string()).min(1),
+});
+export type DeleteMcpsRequest = z.infer<typeof DeleteMcpsRequestSchema>;
+
+export const DeleteMcpsResponseSchema = BasicResponseSchema;
+export type DeleteMcpsResponse = z.infer<typeof DeleteMcpsResponseSchema>;
+
+export const DeleteMcpsContract = {
+  requestSchema: DeleteMcpsRequestSchema,
+  responseSchema: DeleteMcpsResponseSchema,
+};
+
+const FlowNodeSchema = z.discriminatedUnion('type', [
+  z.object({
+    id: z.string(),
+    type: z.literal('role'),
+    position: z.object({ x: z.number(), y: z.number() }),
+    data: z.object({ roleName: z.string() }),
+  }),
+  z.object({
+    id: z.string(),
+    type: z.literal('mcp'),
+    position: z.object({ x: z.number(), y: z.number() }),
+    data: z.object({ mcpName: z.string() }),
+  }),
+]);
+export type FlowNode = z.infer<typeof FlowNodeSchema>;
+
+export const FlowEdgeSchema = z.object({
+  id: z.string(),
+  source: z.string(),
+  target: z.string(),
+});
+export type FlowEdge = z.infer<typeof FlowEdgeSchema>;
+
+export const FlowShortSchema = z.object({
+  ...CommonColumnsSchema.shape,
+  flowName: z.string(),
+  flowIcon: z.base64().optional(),
+});
+
+export const FlowFullSchema = z.object({
+  ...FlowShortSchema.shape,
+  nodes: z.array(FlowNodeSchema).min(1),
+  edges: z.array(FlowNodeSchema).min(1),
+});
+
+export const CreateFlowRequestSchema = FlowFullSchema;
+export type CreateFlowRequest = z.infer<typeof CreateFlowRequestSchema>;
+
+export const CreateFlowResponseSchema = BasicResponseSchema;
+export type CreateFlowResponse = z.infer<typeof CreateFlowResponseSchema>;
+
+export const CreateFlowContract = {
+  requestSchema: CreateFlowRequestSchema,
+  responseSchema: CreateFlowResponseSchema,
+};
+
+export const GetFlowRequestSchema = z.object({
+  name: z.string().min(1),
+});
+export type GetFlowRequest = z.infer<typeof GetFlowRequestSchema>;
+
+export const GetFlowResponseSchema = BasicResponseSchema.extend({
+  ...FlowFullSchema.shape,
+});
+export type GetFlowResponse = z.infer<typeof GetFlowResponseSchema>;
+
+export const GetFlowContract = {
+  requestSchema: GetFlowRequestSchema,
+  responseSchema: GetFlowResponseSchema,
+};
+
+export const GetFlowListRequestSchema = z.void();
+export type GetFlowListRequest = z.infer<typeof GetFlowListRequestSchema>;
+export const GetFlowListResponseSchema = BasicResponseSchema.extend({
+  flows: z.array(FlowShortSchema),
+});
+
+export type GetFlowListResponse = z.infer<typeof GetFlowListResponseSchema>;
+
+export const GetFlowListContract = {
+  requestSchema: GetFlowListRequestSchema,
+  responseSchema: GetFlowListResponseSchema,
+};
+
+export const SetFlowRequestSchema = FlowFullSchema.extend({
+  orgName: z.string().min(1),
+});
+export type SetFlowRequest = z.infer<typeof SetFlowRequestSchema>;
+
+export const SetFlowResponseSchema = BasicResponseSchema;
+export type SetFlowResponse = z.infer<typeof SetFlowResponseSchema>;
+
+export const SetFlowContract = {
+  requestSchema: SetFlowRequestSchema,
+  responseSchema: SetFlowResponseSchema,
+};
+
+export const DeleteFlowsRequestSchema = z.object({
+  flowNames: z.array(z.string()).min(1),
+});
+export type DeleteFlowsRequest = z.infer<typeof DeleteFlowsRequestSchema>;
+
+export const DeleteFlowsResponseSchema = BasicResponseSchema;
+export type DeleteFlowsResponse = z.infer<typeof DeleteFlowsResponseSchema>;
+
+export const DeleteFlowsContract = {
+  requestSchema: DeleteFlowsRequestSchema,
+  responseSchema: DeleteFlowsResponseSchema,
 };
 
 export const GetLanguagesRequestSchema = z.void();

@@ -39,6 +39,7 @@ const getDb = () => {
   db.pragma('foreign_keys = ON');
 
   connections.set(sqlName, db);
+
   return db;
 };
 
@@ -119,3 +120,5 @@ export {
 // const bundle = queryOne<BundleRow>(`SELECT * FROM bundles WHERE bundle_id = ?`, id);
 // // INSERT/UPDATE/DELETE
 // execute(`UPDATE bundles SET last_modified = datetime('now') WHERE bundle_id = ?`, id);
+const version = queryOne<{ string: string }>('SELECT sqlite_version()');
+console.log('Running SQLite:', version);

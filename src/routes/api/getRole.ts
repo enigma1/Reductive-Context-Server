@@ -24,13 +24,13 @@ export const getRole = async (req: FastifyRequest, rsp: FastifyReply) =>
           message: 'AI Role not found',
         });
       }
-      const { roleName, image, ...rest } = recordSnakeToCamel(roleRow);
+      const { roleName, roleIcon, ...rest } = recordSnakeToCamel(roleRow);
       return responseSchema.parse({
         ok: true,
         message: 'Role retrieved',
         ...rest,
         name: roleName,
-        image: image || undefined,
+        roleIcon: roleIcon || undefined,
       });
     },
   });

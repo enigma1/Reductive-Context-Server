@@ -63,6 +63,9 @@ export type BundlePathsInsertCols = {
 export type RoleListRow = {
   role_name: string;
   role_main: string;
+  role_icon: string;
+  sort_order: number;
+  status: boolean;
 };
 
 export type RoleRow = RoleListRow & {
@@ -71,6 +74,28 @@ export type RoleRow = RoleListRow & {
   scope_prompt: string;
   scope_rules: string;
   scope_examples: string;
+};
+
+export type FlowListRow = {
+  flow_name: string;
+  flow_icon: string;
+  status: 0 | 1;
+  sortOrder: number;
+};
+
+export type FlowRow = FlowListRow & {
+  flowGraph: string;
+};
+
+export type McpListRow = {
+  mcp_name: string;
+  mcp_icon: string;
+  status: 0 | 1;
+  sortOrder: number;
+};
+
+export type McpRow = FlowListRow & {
+  mcp_json: string;
 };
 
 export type ColShape = {
