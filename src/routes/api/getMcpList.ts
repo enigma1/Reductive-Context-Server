@@ -4,10 +4,8 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { apiCallAuth } from '>/services';
 import { GetMcpListContract, type GetMcpListResponse } from '>/contracts';
-import { queryRecords } from '>/db';
-import { McpTransports } from '>/contracts';
-import { recordSnakeToCamel } from '>/utils';
-import type { McpListRow } from '>/types';
+import { getColumns, queryRows } from '>/db';
+import type { Primitive } from '>/types';
 
 export const getMcpList = async (req: FastifyRequest, rsp: FastifyReply) =>
   apiCallAuth({
@@ -15,21 +13,21 @@ export const getMcpList = async (req: FastifyRequest, rsp: FastifyReply) =>
     rsp,
     fn: async (): Promise<GetMcpListResponse> => {
       const { responseSchema } = GetMcpListContract;
+      const { cols, columnsOrder } = getColumns('mcp_services');
 
-      const sql = `SELECT mcp_name, mcp_transport, mcp_icon, status, sort_order FROM mcp_services ORDER BY sort_order, mcp_name`;
-      const rows = queryRecords<McpListRow>(sql);
-      const services = rows.map((row) => {
-        const { mcpIcon, ...rest } = recordSnakeToCamel(row);
-        return {
-          ...rest,
-          mcpIcon: mcpIcon || undefined,
-        };
-      });
+      const rows = queryRows<Primitive>(`
+        SELECT mcp_name, mcp_transport, mcp_icon, status, sort_order
+        FROM mcp_services
+        ORDER BY sort_order, mcp_name
+      `);
 
+      console.log('------------------------------>', columnsOrder, cols, rows);
       return responseSchema.parse({
         ok: true,
         message: 'MCP list retrieved',
-        services,
+        cols,
+        columnsOrder,
+        rows,
       });
     },
   });

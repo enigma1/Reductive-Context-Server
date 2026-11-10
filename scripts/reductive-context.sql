@@ -63,15 +63,15 @@ CREATE TABLE
 
 CREATE TABLE
   IF NOT EXISTS mcp_services (
-    mcp_name TEXT NOT NULL PRIMARY KEY,
-    mcp_json TEXT NOT NULL,
-    mcp_transport TEXT NOT NULL,
+    mcp_name TEXT NOT NULL DEFAULT '' PRIMARY KEY,
+    mcp_summary TEXT NOT NULL DEFAULT '',
+    mcp_json TEXT NOT NULL DEFAULT '{}',
+    mcp_transport TEXT NOT NULL DEFAULT 'http',
     mcp_icon TEXT,
     sort_order INTEGER NOT NULL DEFAULT 0,
     status INTEGER NOT NULL DEFAULT 1 CHECK (status IN (0, 1))
   );
 
-CREATE TABLE
   IF NOT EXISTS flow_palette (
     flow_name TEXT NOT NULL PRIMARY KEY,
     flow_graph TEXT NOT NULL,

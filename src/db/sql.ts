@@ -7,7 +7,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { envConfig } from '>/config';
 import { appErrors } from '>/services';
-import { SqlColumn } from '>/types';
+import { SqlColumn, ColShape } from '>/types';
 
 export const sanitizeDbName = (name: string): string => {
   const cleaned = name.replace(/[^a-zA-Z0-9._-]/g, '').slice(0, 64);
@@ -90,8 +90,27 @@ const getTables = () =>
     )
     .all();
 
-const getColumns = (table: string) =>
+const getColumnsObject = (table: string) =>
   queryRecords<SqlColumn>(`SELECT * FROM pragma_table_info(?)`, table);
+
+const getColumns = (table: string) => {
+  const colsArray = getColumnsObject(table);
+  const columnsOrder = colsArray.map((col) => col.name);
+  const cols = colsArray.reduce(
+    (acc, current) => {
+      return {
+        ...acc,
+        [current.name]: { name: current.name, type: current.type },
+      };
+    },
+    {} as Record<string, ColShape>,
+  );
+
+  return {
+    cols,
+    columnsOrder,
+  };
+};
 
 const closeDb = (): boolean => {
   if (connections.size === 0) return false;
@@ -105,6 +124,7 @@ export {
   setDb,
   getTables,
   getColumns,
+  getColumnsObject,
   queryRecords,
   queryRows,
   queryOne,

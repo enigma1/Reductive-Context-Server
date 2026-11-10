@@ -1,3 +1,5 @@
+import { McpTransports } from '>/contracts';
+
 export type SqlColumn = {
   cid: number;
   name: string;
@@ -89,12 +91,14 @@ export type FlowRow = FlowListRow & {
 
 export type McpListRow = {
   mcp_name: string;
-  mcp_icon: string;
+  mcp_summary: string;
+  mcp_icon?: string;
+  mcp_transport: McpTransports;
   status: 0 | 1;
   sortOrder: number;
 };
 
-export type McpRow = FlowListRow & {
+export type McpRow = McpListRow & {
   mcp_json: string;
 };
 

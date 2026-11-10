@@ -7,16 +7,7 @@ import { GetMcpContract, type GetMcpResponse } from '>/contracts';
 import { queryOne } from '>/db';
 import { appErrors } from '>/services';
 import { recordSnakeToCamel } from '>/utils';
-import { McpTransports } from '>/contracts';
-
-interface McpRow {
-  mcp_name: string;
-  mcp_transport: McpTransports;
-  mcp_icon?: string;
-  mcp_json: string;
-  sort_order: number;
-  status: number;
-}
+import type { McpRow } from '>/types';
 
 export const getMcp = async (req: FastifyRequest, rsp: FastifyReply) =>
   apiCallAuth({
@@ -25,7 +16,7 @@ export const getMcp = async (req: FastifyRequest, rsp: FastifyReply) =>
     fn: async (): Promise<GetMcpResponse> => {
       const { requestSchema, responseSchema } = GetMcpContract;
       const { name } = requestSchema.parse(req.body);
-      const sql = `SELECT * FROM ai_mcps WHERE mcp_name = ?`;
+      const sql = `SELECT * FROM mcp_services WHERE mcp_name = ?`;
       const row = queryOne<McpRow>(sql, name);
       if (!row) {
         throw appErrors.sql({
@@ -33,16 +24,17 @@ export const getMcp = async (req: FastifyRequest, rsp: FastifyReply) =>
           message: 'MCP not found',
         });
       }
-      const camel = recordSnakeToCamel(row);
+      const mcp = recordSnakeToCamel(row);
       return responseSchema.parse({
         ok: true,
         message: 'MCP retrieved',
-        mcpName: camel.mcpName,
-        mcpTransport: camel.mcpTransport,
-        mcpIcon: camel.mcpIcon || undefined,
-        mcpJson: camel.mcpJson,
-        sortOrder: camel.sortOrder,
-        status: Boolean(camel.status),
+        mcpName: mcp.mcpName,
+        mcpSummary: mcp.mcpSummary,
+        mcpTransport: mcp.mcpTransport,
+        mcpIcon: mcp.mcpIcon || undefined,
+        mcpJson: mcp.mcpJson,
+        sortOrder: mcp.sortOrder,
+        status: mcp.status,
       });
     },
   });

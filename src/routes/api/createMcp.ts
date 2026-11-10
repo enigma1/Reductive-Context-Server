@@ -13,17 +13,11 @@ export const createMcp = async (req: FastifyRequest, rsp: FastifyReply) =>
     rsp,
     fn: async (): Promise<CreateMcpResponse> => {
       const { requestSchema, responseSchema } = CreateMcpContract;
-      const {
-        mcpName,
-        mcpTransport,
-        mcpIcon,
-        mcpJson,
-        sortOrder,
-        status,
-      } = requestSchema.parse(req.body);
+      const { mcpName, mcpTransport, mcpIcon, mcpJson, sortOrder, status } =
+        requestSchema.parse(req.body);
 
       const existing = queryOne<{ mcp_name: string }>(
-        `SELECT mcp_name FROM ai_mcps WHERE mcp_name = ?`,
+        `SELECT mcp_name FROM mcp_services WHERE mcp_name = ?`,
         mcpName,
       );
       if (existing) {
@@ -34,7 +28,7 @@ export const createMcp = async (req: FastifyRequest, rsp: FastifyReply) =>
       }
 
       const sqlCreate = `
-        INSERT INTO ai_mcps (mcp_name, mcp_transport, mcp_icon, mcp_json, sort_order, status)
+        INSERT INTO mcp_services (mcp_name, mcp_transport, mcp_icon, mcp_json, sort_order, status)
         VALUES (?, ?, ?, ?, ?, ?)
       `;
 

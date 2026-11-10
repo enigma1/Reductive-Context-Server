@@ -1,7 +1,7 @@
 {
   "name": "Reductive-Modeller-Server",
   "description": "The Reductive Modeller Server enables the user to select content files and along with a prompt submit them to a role-primed LLM.",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "author": "Mark Samios",
   "license": "GPL-3.0",
   "keywords": [
@@ -14,6 +14,9 @@
     "human-in-the-loop"
   ],
   "type": "module",
+  "overrides": {
+    "better-sqlite3": "^13.0.3"
+  },
   "dependencies": {
     "@dqbd/tiktoken": "^1.0.22",
     "@fastify/cookie": "^11.1.2",

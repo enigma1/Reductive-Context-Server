@@ -389,6 +389,7 @@ export type McpTransports = z.infer<typeof mcpTransports>;
 export const McpShortSchema = z.object({
   ...CommonColumnsSchema.shape,
   mcpName: z.string().min(1),
+  mcpSummary: z.string().min(1),
   mcpTransport: z.enum(mcpTransports),
   mcpIcon: z.string().optional(),
 });
@@ -414,7 +415,7 @@ export const GetMcpListRequestSchema = z.void();
 
 export type GetMcpListRequest = z.infer<typeof GetMcpListRequestSchema>;
 export const GetMcpListResponseSchema = BasicResponseSchema.extend({
-  services: z.array(McpShortSchema),
+  ...BasicRowsShapeSchema.shape,
 });
 export type GetMcpListResponse = z.infer<typeof GetMcpListResponseSchema>;
 

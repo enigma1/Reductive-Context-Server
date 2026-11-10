@@ -24,7 +24,7 @@ export const setMcp = async (req: FastifyRequest, rsp: FastifyReply) =>
       } = requestSchema.parse(req.body);
 
       const existing = queryOne<{ mcp_name: string }>(
-        `SELECT mcp_name FROM ai_mcps WHERE mcp_name = ?`,
+        `SELECT mcp_name FROM mcp_services WHERE mcp_name = ?`,
         orgName,
       );
       if (!existing) {
@@ -35,7 +35,7 @@ export const setMcp = async (req: FastifyRequest, rsp: FastifyReply) =>
       }
 
       const sql = `
-        UPDATE ai_mcps SET mcp_name = ?, mcp_transport = ?, mcp_icon = ?, mcp_json = ?, sort_order = ?, status = ?
+        UPDATE mcp_services SET mcp_name = ?, mcp_transport = ?, mcp_icon = ?, mcp_json = ?, sort_order = ?, status = ?
         WHERE mcp_name = ?
       `;
 

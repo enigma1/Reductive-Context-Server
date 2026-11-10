@@ -12,17 +12,7 @@ export const getBundleList = async (req: FastifyRequest, rsp: FastifyReply) =>
     rsp,
     fn: async (): Promise<GetBundleListResponse> => {
       const { responseSchema } = GetBundleListContract;
-      const colsArray = getColumns('bundles');
-      const columnsOrder = colsArray.map((col) => col.name);
-      const cols = colsArray.reduce(
-        (acc, current) => {
-          return {
-            ...acc,
-            [current.name]: { name: current.name, type: current.type },
-          };
-        },
-        {} as Record<string, ColShape>,
-      );
+      const { cols, columnsOrder } = getColumns('bundles');
       const sqlBundle = `SELECT * FROM bundles`;
       const fullRows = queryRows<Primitive>(sqlBundle);
       const rows = fullRows.map((row) =>
