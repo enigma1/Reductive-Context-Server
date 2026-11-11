@@ -1,6 +1,6 @@
 import type { PromptData, PromptHistory } from './prompt';
 import type { OpenRouterModels } from './models';
-import type { UserPrefs, BasicRowsShape, BasicResponse } from '>/contracts';
+import type { UserPrefs, BasicRows, BasicResponse } from '>/contracts';
 
 export type ApiResponse<T> = {
   data: T;
@@ -17,7 +17,7 @@ export type PrimeObject<T = any> = T extends any[] | Function
     ? Record<string, T>
     : never;
 
-export type BasicDataResponse = BasicResponse & BasicRowsShape;
+export type BasicDataResponse = BasicResponse & BasicRows;
 
 export type AiStatus = {
   active: boolean;

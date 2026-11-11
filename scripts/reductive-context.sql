@@ -72,6 +72,18 @@ CREATE TABLE
     status INTEGER NOT NULL DEFAULT 1 CHECK (status IN (0, 1))
   );
 
+-- {
+--   "nodes": [
+--     { "id": "n-1", "type": "role", "position": {"x":0,"y":0},   "data": {"roleName": "planner"} },
+--     { "id": "n-2", "type": "role", "position": {"x":300,"y":0}, "data": {"roleName": "critic"} },
+--     { "id": "n-3", "type": "mcp",  "position": {"x":150,"y":120},"data": {"mcpName": "filesystem"} }
+--   ],
+--   "edges": [
+--     { "id": "e1", "source": "n-1", "target": "n-2", "sourceHandle": null, "targetHandle": null },
+--     { "id": "e2", "source": "n-3", "target": "n-2", "sourceHandle": "tool-output", "targetHandle": "tool-input", "type": "tool" }
+--   ]
+-- }
+CREATE TABLE
   IF NOT EXISTS flow_palette (
     flow_name TEXT NOT NULL PRIMARY KEY,
     flow_graph TEXT NOT NULL,

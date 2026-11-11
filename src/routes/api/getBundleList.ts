@@ -2,7 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { apiCallAuth } from '>/services';
 import { GetBundleListContract, type GetBundleListResponse } from '>/contracts';
 import { queryRows, getColumns } from '>/db';
-import { JsonArray, Primitive, ColShape } from '>/types';
+import { Primitive } from '>/types';
 
 const SHORT_TEXT = 250;
 
@@ -16,8 +16,8 @@ export const getBundleList = async (req: FastifyRequest, rsp: FastifyReply) =>
       const sqlBundle = `SELECT * FROM bundles`;
       const fullRows = queryRows<Primitive>(sqlBundle);
       const rows = fullRows.map((row) =>
-        row.map((value, i) => {
-          const colType = cols[columnsOrder[i]]?.type ?? '';
+        row.map((value, idx) => {
+          const colType = cols[columnsOrder[idx]]?.type ?? '';
           if (
             colType.toUpperCase().includes('TEXT') &&
             typeof value === 'string'

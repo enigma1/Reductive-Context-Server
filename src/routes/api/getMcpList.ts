@@ -13,15 +13,21 @@ export const getMcpList = async (req: FastifyRequest, rsp: FastifyReply) =>
     rsp,
     fn: async (): Promise<GetMcpListResponse> => {
       const { responseSchema } = GetMcpListContract;
-      const { cols, columnsOrder } = getColumns('mcp_services');
+      const { cols } = getColumns('mcp_services');
+      const columnsOrder = [
+        'mcp_name',
+        'mcp_transport',
+        'mcp_icon',
+        'status',
+        'sort_order',
+      ];
 
       const rows = queryRows<Primitive>(`
-        SELECT mcp_name, mcp_transport, mcp_icon, status, sort_order
+        SELECT ${columnsOrder.join(', ')}
         FROM mcp_services
         ORDER BY sort_order, mcp_name
       `);
 
-      console.log('------------------------------>', columnsOrder, cols, rows);
       return responseSchema.parse({
         ok: true,
         message: 'MCP list retrieved',

@@ -64,7 +64,7 @@ export const routes = async (server: FastifyInstance) => {
   server.post('/api/create-role', createRole);
   server.post('/api/activate-role', activateRole);
   server.post('/api/create-mcp', createMcp);
-  server.get('/api/get-mcps', getMcpList);
+  server.get('/api/get-mcp-list', getMcpList);
   server.post('/api/get-mcp', getMcp);
   server.post('/api/set-mcp', setMcp);
   server.post('/api/delete-mcps', deleteMcps);
