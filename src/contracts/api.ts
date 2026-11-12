@@ -538,7 +538,7 @@ export const GetFlowContract = {
 export const GetFlowListRequestSchema = z.void();
 export type GetFlowListRequest = z.infer<typeof GetFlowListRequestSchema>;
 export const GetFlowListResponseSchema = BasicResponseSchema.extend({
-  flows: z.array(FlowShortSchema),
+  ...BasicRowsSchema.shape,
 });
 
 export type GetFlowListResponse = z.infer<typeof GetFlowListResponseSchema>;

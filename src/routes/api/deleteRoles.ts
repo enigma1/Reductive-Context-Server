@@ -14,7 +14,7 @@ export const deleteRoles = async (req: FastifyRequest, rsp: FastifyReply) =>
       const { requestSchema, responseSchema } = DeleteRolesContract;
       const { roleNames } = requestSchema.parse(req.body);
       const placeholders = roleNames.map(() => '?').join(', ');
-      const sql = `DELETE FROM roles WHERE role_name IN (${placeholders})`;
+      const sql = `DELETE FROM ai_roles WHERE role_name IN (${placeholders})`;
       const result = execute(sql, ...roleNames);
 
       if (result.changes !== roleNames.length) {

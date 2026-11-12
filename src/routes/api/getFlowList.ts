@@ -4,9 +4,8 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { apiCallAuth } from '>/services';
 import { GetFlowListContract, type GetFlowListResponse } from '>/contracts';
-import { queryRecords } from '>/db';
-import { recordSnakeToCamel } from '>/utils';
-import { FlowListRow } from '>/types';
+import { getColumns, queryRows } from '>/db';
+import { Primitive } from '>/types';
 
 export const getFlowList = async (req: FastifyRequest, rsp: FastifyReply) =>
   apiCallAuth({
@@ -15,19 +14,21 @@ export const getFlowList = async (req: FastifyRequest, rsp: FastifyReply) =>
     fn: async (): Promise<GetFlowListResponse> => {
       const { responseSchema } = GetFlowListContract;
 
-      const sql = `SELECT flow_name, flow_icon, status, sort_order FROM flow_palette ORDER BY sort_order, flow_name`;
-      const rows = queryRecords<FlowListRow>(sql);
-      const flows = rows.map((flowRow) => {
-        const { flowIcon, ...rest } = recordSnakeToCamel(flowRow);
-        return {
-          ...rest,
-          flowIcon: flowIcon || undefined,
-        };
-      });
+      const { cols } = getColumns('mcp_services');
+      const columnsOrder = ['flow_name', 'flow_icon', 'status', 'sort_order'];
+
+      const rows = queryRows<Primitive>(`
+        SELECT ${columnsOrder.join(', ')}
+        FROM flow_palette
+        ORDER BY sort_order, flow_name
+      `);
+
       return responseSchema.parse({
         ok: true,
-        message: 'Flow list retrieved',
-        flows,
+        message: 'List of flows retrieved',
+        cols,
+        columnsOrder,
+        rows,
       });
     },
   });
