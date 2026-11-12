@@ -4,8 +4,8 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { apiCallAuth } from '>/services';
 import { GetRoleListContract, type GetRoleListResponse } from '>/contracts';
-import { queryRecords } from '>/db';
-import { RoleListRow } from '>/types';
+import { queryRows, getColumns } from '>/db';
+import { Primitive } from '>/types';
 import { recordSnakeToCamel } from '>/utils';
 
 export const getRoleList = async (req: FastifyRequest, rsp: FastifyReply) =>
@@ -14,22 +14,27 @@ export const getRoleList = async (req: FastifyRequest, rsp: FastifyReply) =>
     rsp,
     fn: async (): Promise<GetRoleListResponse> => {
       const { responseSchema } = GetRoleListContract;
+      const { cols } = getColumns('ai_roles');
+      const columnsOrder = [
+        'role_name',
+        'role_main',
+        'role_icon',
+        'status',
+        'sort_order',
+      ];
 
-      const sqlRoles = `SELECT role_name, role_main, role_icon, status, sort_order FROM ai_roles ORDER BY sort_order, role_name asc`;
-      const rows = queryRecords<RoleListRow>(sqlRoles);
-      const roles = rows.map((roleRow) => {
-        const { roleName, roleIcon, ...rest } = recordSnakeToCamel(roleRow);
-        return {
-          ...rest,
-          name: roleName,
-          roleIcon: roleIcon || undefined,
-        };
-      });
+      const rows = queryRows<Primitive>(`
+        SELECT ${columnsOrder.join(', ')}
+        FROM ai_roles
+        ORDER BY sort_order, role_name
+      `);
 
       return responseSchema.parse({
         ok: true,
         message: 'Roles list retrieved',
-        roles,
+        cols,
+        columnsOrder,
+        rows,
       });
     },
   });

@@ -323,7 +323,7 @@ export const CreateRoleContract = {
 export const GetRoleListRequestSchema = z.void();
 export type GetRoleListRequest = z.infer<typeof GetRoleListRequestSchema>;
 export const GetRoleListResponseSchema = BasicResponseSchema.extend({
-  roles: z.array(AssistantRoleSchema),
+  ...BasicRowsSchema.shape,
 });
 
 export type GetRoleListResponse = z.infer<typeof GetRoleListResponseSchema>;

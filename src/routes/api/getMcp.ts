@@ -25,16 +25,17 @@ export const getMcp = async (req: FastifyRequest, rsp: FastifyReply) =>
         });
       }
       const mcp = recordSnakeToCamel(row);
-      return responseSchema.parse({
+      const result = {
         ok: true,
         message: 'MCP retrieved',
         mcpName: mcp.mcpName,
-        mcpSummary: mcp.mcpSummary,
+        mcpSummary: mcp.mcpSummary || 'no summary provided',
         mcpTransport: mcp.mcpTransport,
         mcpIcon: mcp.mcpIcon || undefined,
         mcpJson: mcp.mcpJson,
         sortOrder: mcp.sortOrder,
         status: mcp.status,
-      });
+      };
+      return responseSchema.parse(result);
     },
   });
