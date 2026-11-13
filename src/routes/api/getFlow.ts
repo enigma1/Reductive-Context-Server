@@ -3,7 +3,12 @@
 */
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { apiCallAuth } from '>/services';
-import { GetFlowContract, type GetFlowResponse, FlowNode, FlowEdge } from '>/contracts';
+import {
+  GetFlowContract,
+  type GetFlowResponse,
+  FlowNode,
+  FlowEdge,
+} from '>/contracts';
 import { queryOne } from '>/db';
 import { appErrors } from '>/services';
 
@@ -21,7 +26,7 @@ export const getFlow = async (req: FastifyRequest, rsp: FastifyReply) =>
     fn: async (): Promise<GetFlowResponse> => {
       const { requestSchema, responseSchema } = GetFlowContract;
       const { name } = requestSchema.parse(req.body);
-      const sql = `SELECT * FROM ai_flows WHERE flow_name = ?`;
+      const sql = `SELECT * FROM flow_palette WHERE flow_name = ?`;
       const row = queryOne<FlowRow>(sql, name);
       if (!row) {
         throw appErrors.sql({
